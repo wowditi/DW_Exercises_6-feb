@@ -34,6 +34,8 @@ def disjointunion(G, H):
 		K.addedge(vmap[e.tail()], vmap[e.head()])
 	return K
 
+def yodo():
+	print('hello')
 
 if __name__ == "__main__":
 	P = path(5)
