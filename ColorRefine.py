@@ -39,15 +39,14 @@ def colorrefine(_l):
 			v.colornum = v.deg()
 	i = 0
 	notfinished = True
-	listshit = _l.copy()
-	oldgraph = listshit[0]
+	oldgraph = graph(0, _l[0].E(), _l[0].V())
 	while notfinished:
 		for v in range(len(_l[0].V())):
 			buur = []
 			for n in oldgraph[v].nbs():
 				buur.append(n.colornum)
 			buur.sort()
-			print(buur)
+			print('buur', buur)
 			found = False
 			for i in range(len(_l[0].V()), len(colorarray)):
 				if colorarray[i] == buur:
@@ -55,6 +54,7 @@ def colorrefine(_l):
 					found = True
 					break
 			if not found:
+				print(colorarray[counter])
 				colorarray[counter] = buur
 				_l[0][v].colornum = counter
 				counter += 1
