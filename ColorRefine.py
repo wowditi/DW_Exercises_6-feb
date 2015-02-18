@@ -28,19 +28,44 @@ J = loadgraph('examplegraph.gr')
 T = loadgraph('examplegraph2.gr')
 Q = loadgraph('examplegraph2.gr')
 
-blaat = [G, H, J, T, Q]
-print(sortlist(blaat))
+blaat = [T]
 
 
 def colorrefine(_l):
-	degarray = [[] for x in range(len(_l[0].V()))]
+	colorarray = [[] for x in range(len(_l[0].V()) + len(_l)*len(_l[0].V()))]
+	counter = len(_l[0].V())
 	for elem in _l:
 		for v in elem.V():
-			print(v.deg())
 			v.colornum = v.deg()
-			degarray[v.deg()].append(v)
 	i = 0
-	print(degarray)
 	notfinished = True
+	listshit = _l.copy()
+	oldgraph = listshit[0]
+	while notfinished:
+		for v in range(len(_l[0].V())):
+			buur = []
+			for n in oldgraph[v].nbs():
+				buur.append(n.colornum)
+			buur.sort()
+			print(buur)
+			found = False
+			for i in range(len(_l[0].V()), len(colorarray)):
+				if colorarray[i] == buur:
+					_l[0][v].colornum = i
+					found = True
+					break
+			if not found:
+				colorarray[counter] = buur
+				_l[0][v].colornum = counter
+				counter += 1
+		if _l[0] == oldgraph:
+			notfinished = False
+		else:
+			oldgraph = _l[0]
+	print(colorarray)
+	print(_l[0])
+	for v in _l[0].V():
+		print(v.colornum)
+
 
 colorrefine(blaat)
