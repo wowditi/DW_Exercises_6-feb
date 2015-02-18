@@ -35,18 +35,6 @@ def disjointunion(G, H):
 	return K
 
 
-def yodo():
-	print('hello')
-
-
-def sdjfl():
-	print('niels is een retard')
-
-
-def sdgndfhghofxxcvcvxdvdvjnkdfdfbjndfjnkl():
-	print('sdnidsjisdjfij')
-
-
 if __name__ == "__main__":
 	P = path(5)
 	C = cycle(5)
