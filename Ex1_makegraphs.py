@@ -34,7 +34,7 @@ def disjointunion(G, H):
 		K.addedge(vmap[e.tail()], vmap[e.head()])
 	return K
 
-
+yolo
 if __name__ == "__main__":
 	P = path(5)
 	C = cycle(5)
@@ -43,3 +43,4 @@ if __name__ == "__main__":
 	print(C)
 	print(K)
 	print(disjointunion(disjointunion(P, C), K))
+
