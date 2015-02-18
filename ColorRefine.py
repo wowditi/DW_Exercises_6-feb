@@ -1,6 +1,13 @@
 __author__ = 'reinard'
-import graphIO
-import basicgraphs
+from  graphIO import *
+from basicgraphs import *
 
-def ColorRefine(G) :
-	return A
+
+def colorrefine(_g):
+	a = _g[:]
+	i = 0
+	notfinished = True
+	while notfinished:
+		i = i + 1
+		
+	return a
