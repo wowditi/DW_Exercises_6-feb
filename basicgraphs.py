@@ -27,6 +27,7 @@ class vertex():
 	and an attribute <_label> which can be anything: it is not used for any methods,
 	except for __repr__. 
 	"""
+
 	def __init__(self,graph,label=0):
 		"""
 		Creates a vertex, part of <graph>, with optional label <label>.
@@ -36,6 +37,10 @@ class vertex():
 		"""
 		self._graph=graph
 		self._label=label
+		self.color_num = 0
+		self.deg = 0
+		self.nbs = []
+		# self.update()
 		
 	def __repr__(self):
 		return str(self._label)		
@@ -46,31 +51,48 @@ class vertex():
 		"""
 		return self._graph.adj(self,other)
 
-	def inclist(self):
-		"""
-		Returns the list of edges incident with vertex <self>.
-		"""
-		incl=[]
-		for e in self._graph._E:
-			if e.incident(self):
-				incl.append(e)
-		return incl
+	def add_nb(self, nb):
+		if not nb in self.nbs:
+			self.nbs.append(nb)
+
+	def del_nb(self, nb):
+		if nb in self.nbs:
+			self.nbs.remove(nb)
+
+	# def inclist(self):
+	# 	"""
+	# 	Returns the list of edges incident with vertex <self>.
+	# 	"""
+	# 	incl=[]
+	# 	for e in self._graph._E:
+	# 		if e.incident(self):
+	# 			incl.append(e)
+	# 	return incl
 		
 	def nbs(self):
 		"""
 		Returns the list of neighbors of vertex <self>.
 		In case of parallel edges: duplicates are not removed from this list!
 		"""		
-		nbl=[]
-		for e in self.inclist():
-			nbl.append(e.otherend(self))
-		return nbl
+		# nbl=[]
+		# for e in self.inclist():
+		# 	nbl.append(e.otherend(self))
+		return self.nbs
+
+	# def update(self):
+	# 	self.deg = len(self.inclist())
+
+	def inc_deg(self):
+		self.deg += 1
+
+	def dec_deg(self):
+		self.deg -= 1
 
 	def deg(self):
 		"""
 		Returns the degree of vertex <self>.
 		"""
-		return len(self.inclist())
+		return self.deg
 		
 class edge():
 	"""
@@ -131,20 +153,14 @@ class graph():
 	 	module)
 	 <_nextlabel> is used to assign default labels to vertices.
 	"""
-	def __init__(self,n=0, e=None, v=None, dict=None, simple=False):
+	def __init__(self,n=0,simple=False):
 		"""
 		Creates a graph. 
 		Optional argument <n>: number of vertices.
 		Optional argument <simple>: indicates whether the graph should stay simple.
 		"""
-		if v == None:
-			self._V=[]
-		else:
-			self._V=v
-		if e == None:
-			self._E=[]
-		else:
-			self._E=e
+		self._V=[]
+		self._E=[]
 
 		self._directed=False
 		# may be changed later for a more general version that can also 
@@ -215,6 +231,10 @@ class graph():
 			raise GraphError(
 				'Edges of a graph G must be between vertices of G')
 		e=edge(tail,head)
+		tail.inc_deg()
+		tail.add_nb(head)
+		head.inc_deg()
+		head.add_nb(tail)
 		self._E.append(e)
 		return e
 
