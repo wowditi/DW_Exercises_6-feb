@@ -2,21 +2,19 @@ __author__ = 'Mark'
 
 from graphIO import *
 from Ex1_makegraphs import disjointunion
+import time
 
-
+#1083.1556 sec
 def refine_colors(_l):
 	# Initialization
 	colordict = {}  # dictionary with key=colornum and value=vertex array
 	print('start refining')
-	o = 0
 	for v in _l.V():
 		v.colornum = v.deg
-		if v.colornum not in colordict:
-			colordict[v.colornum] = [v]
-		else:
+		if v.colornum in colordict:
 			colordict[v.colornum].append(v)
-		o += 1
-		print(o)
+		else:
+			colordict[v.colornum] = [v]
 	print('initial')
 
 	not_done = True
@@ -67,8 +65,10 @@ def compare(x):
 		nodes.append(tuple([len(graphs.V()), len(graphs.V())+len(g.V())]))
 		print('disjoint union of total and', _l.index(g))
 		graphs = disjointunion(graphs, g)
+	start_time = time.clock()
 	array = refine_colors(graphs)
-	# print(array)
+	elapsed_time = time.clock() - start_time
+	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
 	result = []
 	for n in nodes:
 		result.append(sorted(array[n[0]:n[1]:]))
@@ -78,20 +78,69 @@ def compare(x):
 				print(i, 'and', j, 'are isomorph')
 	# print(result)
 
-
+#849.5499 sec
 def efficient(_l):
+		# Initialization
+	colordict = {}  # dictionary with key=colornum and value=vertex array
+
 	print('start refining')
-	v_array = _l.V()
-	n = len(v_array)
-	array = [[] for i in range(n)]
-	o = 0
-	for v in range(n):
-		vertex = v_array[v]
-		# vertex.colornum = vertex.deg()
-		array[v].append(vertex)
-		o += 1
-		print(o)
+	for v in _l.V():
+		v.colornum = v.deg
+		if v.colornum in colordict:
+			colordict[v.colornum].append(v)
+		else:
+			colordict[v.colornum] = [v]
 	print('initial')
+	not_done = True
+	newcolor = max(colordict.keys()) + 1
+	print('NEWCOLOR', newcolor)
+	print('KEYS', colordict.keys())
+
+	while not_done:
+		tempcolordict = dict()
+		# print(colordict.keys())
+		# print(colordict)
+		temp = dict()
+		for key in colordict.keys():
+			array = colordict[key]
+			buren = tuple(get_nb_colors(array[0]))
+			# print(key)
+			tempcolordict[key] = [array[0]]
+			adjusted = False
+
+			for value in array[1::]:
+				nc = tuple(get_nb_colors(value))
+				if nc == buren:
+					# try:
+					tempcolordict[value.colornum].append(value)
+					# except KeyError:
+					# 	print(key, value.colornum)
+					# 	print(colordict.keys())
+				else:
+					if newcolor in tempcolordict:
+						tempcolordict[newcolor].append(value)
+					else:
+						tempcolordict[newcolor] = [value]
+						# print(tempcolordict[newcolor], newcolor)
+						adjusted = True
+					temp[value] = newcolor
+			if adjusted:
+				# print(key)
+				newcolor += 1
+		if tempcolordict == colordict:
+			not_done = False
+		# print(temp)
+		for v in temp.keys():
+			v.colornum = temp[v]
+		colordict = tempcolordict.copy()
+		# print(colordict)
+		print('step')
+	# print(colordict)
+	finalcolors = []
+	for node in _l.V():
+		finalcolors.append(node.colornum)
+
+	return finalcolors
 
 
 
