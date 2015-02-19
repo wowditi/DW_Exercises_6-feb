@@ -68,8 +68,9 @@ def compare(x):
 	graphs = x[0][0]
 	for y in range(1, len(x[0])):
 		graphs = disjointunion(graphs, x[0][y])
-	writeDOT(graphs,'jemoeder.dot')
-	writeDOT(x[0][0],'j3mo3d3r.dot')
+	# graphs = disjointunion(x[0][1],x[0][2])
+	# writeDOT(graphs,'jemoeder.dot')
+	# writeDOT(x[0][0],'j3mo3d3r.dot')
 	print(sorted(refine(graphs)))
 
 
@@ -81,4 +82,4 @@ def removeDuplicates(original):
 	return new
 
 
-print(compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True)))
+compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
