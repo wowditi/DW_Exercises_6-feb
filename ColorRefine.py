@@ -10,7 +10,7 @@ def sortlist(_l):
 	returnarray = []
 	i = 0
 	temp = 1
-	while i < len(array)-1: #for i in range(len(array)-1):
+	while i < len(array): #for i in range(len(array)-1):
 		temparray = []
 		temparray.append(_l[i])
 		for g in range(i+1,len(array)):
@@ -19,7 +19,7 @@ def sortlist(_l):
 				temp += 1
 		returnarray.append(temparray)
 		i += temp
-		temp = 0
+		temp = 1
 	print(returnarray)
 
 G = loadgraph('examplegraph.gr')
@@ -28,11 +28,31 @@ J = loadgraph('examplegraph.gr')
 T = loadgraph('examplegraph2.gr')
 Q = loadgraph('examplegraph2.gr')
 
-blaat = [T]
+blaat = [T,G]
+
+
+def color_refine(_l):
+	array = []
+	for elem in _l:
+		elem.init_color_refine()
+		temp = elem.getDict()
+		array.append(temp)
+		'''
+		print(temp)
+		for key in temp:
+			for v in temp[key]:
+				print(v.colornum)
+		'''
+	#for i in range(len(array)-1):
+
+
+	print(array)
+
 
 
 def colorrefine(_l):
 	colorarray = [[] for x in range(len(_l[0].V()) + len(_l)*len(_l[0].V()))]
+	test = dict([])
 	counter = len(_l[0].V())
 	for elem in _l:
 		for v in elem.V():
@@ -48,6 +68,8 @@ def colorrefine(_l):
 			buur.sort()
 			print('buur', buur)
 			found = False
+			if buur in test:
+				test()
 			for i in range(len(_l[0].V()), len(colorarray)):
 				if colorarray[i] == buur:
 					_l[0][v].colornum = i
@@ -68,4 +90,5 @@ def colorrefine(_l):
 		print(v.colornum)
 
 
-colorrefine(blaat)
+color_refine(blaat)
+sortlist(blaat)

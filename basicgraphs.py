@@ -131,7 +131,7 @@ class graph():
 	 	module)
 	 <_nextlabel> is used to assign default labels to vertices.
 	"""
-	def __init__(self,n=0, e=None, v=None, simple=False):
+	def __init__(self,n=0, e=None, v=None, dict=None, simple=False):
 		"""
 		Creates a graph. 
 		Optional argument <n>: number of vertices.
@@ -145,6 +145,7 @@ class graph():
 			self._E=[]
 		else:
 			self._E=e
+
 		self._directed=False
 		# may be changed later for a more general version that can also 
 		# handle directed graphs.
@@ -243,5 +244,4 @@ class graph():
 		Returns False, because for now these graphs are always undirected.
 		"""
 		return self._directed
-		
 
