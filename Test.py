@@ -2,57 +2,49 @@ __author__ = 'Mark'
 
 from graphIO import *
 from Ex1_makegraphs import disjointunion
-from basicgraphs import graph
 
 
-def refine(g):
-	#initialize
-	colordict = { }
-	for v in g.V():
-		v.colorNum = v.deg()
-		if v.colorNum not in colordict:
-			colordict[v.colorNum] = [v]
+def refine(_l):
+	# initialize
+	colordict = {}  #dictionary with key=colornum and value=vertex array
+	for v in _l.V():
+		v.colornum = v.deg()
+		if v.colornum not in colordict:
+			colordict[v.colornum] = [v]
 		else:
-			colordict[v.colorNum].append(v)
+			colordict[v.colornum].append(v)
 	print(colordict)
 
-	oldgraph = graph(0, g.E(), g.V())
 	changed = True
 	newcolor = max(colordict.keys()) + 1
 
 	while changed:
-		tempcolordict = colordict.copy()
-		for key in tempcolordict.keys():
+		tempcolordict = dict()
+		for key in colordict.keys():
 			buren = tuple()
-			for value in tempcolordict.get(key):
+			for value in colordict[key]:
 				nc = sorted(tuple(getNeighbourColors(value)))
 				if len(buren) == 0:
 					buren = nc
 				elif nc != buren:
-					print('###', nc, '    ', buren)
-					colordict[key].remove(value)
-					# value.colorNum = newcolor
-					# buren[nc] = newcolor
-					if newcolor in colordict:
-						colordict[newcolor].append(value)
-					else:
-						colordict[newcolor] = [value]
-				else:
-					print('---', nc, '    ', buren)
-				# 	colordict[value.colorNum].remove(value)
-				# 	# value.colorNum = buren[nc]
-				# 	colordict[buren[nc]].append(value)
-			print(colordict, '\n')
+					tempcolordict[value] = tuple([value.colornum, newcolor])
+			print('step', colordict)
 			newcolor = max(colordict.keys()) + 1
-		for key in colordict:
-			for value in colordict[key]:
-				value.colorNum = key
-		if tempcolordict == colordict:
+		if len(tempcolordict) == 0:
 			changed = False
 			print(colordict)
+		for value in tempcolordict:
+			old = tempcolordict[value][0]
+			new = tempcolordict[value][1]
+			colordict[old].remove(value)
+			value.colornum = new
+			if new in colordict:
+				colordict[new].append(value)
+			else:
+				colordict[new] = [value]
 	finalcolors = []
-	for node in g.V():
-		finalcolors.append(node.colorNum)
+	for node in _l.V():
+		finalcolors.append(node.colornum)
 
 	return finalcolors
 
@@ -60,7 +52,7 @@ def refine(g):
 def getNeighbourColors(v):
 	colors = []
 	for i in v.nbs():
-		colors.append(i.colorNum)
+		colors.append(i.colornum)
 	return colors
 
 
