@@ -4,35 +4,33 @@ from graphIO import *
 from Ex1_makegraphs import disjointunion
 
 
-def refine(_l):
-	# initialize
-	colordict = {}  #dictionary with key=colornum and value=vertex array
+def refine_colors(_l):
+	# Initialization
+	colordict = {}  # dictionary with key=colornum and value=vertex array
 	for v in _l.V():
 		v.colornum = v.deg()
 		if v.colornum not in colordict:
 			colordict[v.colornum] = [v]
 		else:
 			colordict[v.colornum].append(v)
-	print(colordict)
+	print('initial', colordict)
 
-	changed = True
+	not_done = True
 	newcolor = max(colordict.keys()) + 1
 
-	while changed:
+	while not_done:
 		tempcolordict = dict()
 		for key in colordict.keys():
-			buren = tuple()
-			for value in colordict[key]:
+			array = colordict[key]
+			buren = sorted(tuple(getNeighbourColors(array[0])))
+			for i in range(1,len(array)):
+				value = array[i]
 				nc = sorted(tuple(getNeighbourColors(value)))
-				if len(buren) == 0:
-					buren = nc
-				elif nc != buren:
+				if nc != buren:
 					tempcolordict[value] = tuple([value.colornum, newcolor])
-			print('step', colordict)
 			newcolor = max(colordict.keys()) + 1
 		if len(tempcolordict) == 0:
-			changed = False
-			print(colordict)
+			not_done = False
 		for value in tempcolordict:
 			old = tempcolordict[value][0]
 			new = tempcolordict[value][1]
@@ -42,6 +40,7 @@ def refine(_l):
 				colordict[new].append(value)
 			else:
 				colordict[new] = [value]
+		print('step', colordict)
 	finalcolors = []
 	for node in _l.V():
 		finalcolors.append(node.colornum)
@@ -51,8 +50,8 @@ def refine(_l):
 
 def getNeighbourColors(v):
 	colors = []
-	for i in v.nbs():
-		colors.append(i.colornum)
+	for n in v.nbs():
+		colors.append(n.colornum)
 	return colors
 
 
@@ -63,7 +62,7 @@ def compare(x):
 	# graphs = disjointunion(x[0][1],x[0][2])
 	# writeDOT(graphs,'jemoeder.dot')
 	# writeDOT(x[0][0],'j3mo3d3r.dot')
-	print(sorted(refine(graphs)))
+	print(sorted(refine_colors(graphs)))
 
 
 def removeDuplicates(original):
