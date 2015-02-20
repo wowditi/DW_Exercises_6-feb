@@ -265,3 +265,9 @@ class graph():
 		"""
 		return self._directed
 
+	def addGraph(self, E, V):
+		for v in V:
+			v._label = self._nextlabel
+			self._nextlabel+=1
+		self._V.extend(V)
+		self._E.extend(E)
