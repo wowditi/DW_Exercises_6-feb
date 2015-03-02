@@ -61,14 +61,14 @@ def compare(x):
 	graphs = _l[0]
 	nodes = []
 	nodes.append(tuple([0, len(_l[0].V())]))
-	start_time = time.clock()
+	#start_time = time.clock()
 	for g in _l[1::]:
 		nodes.append(tuple([len(graphs.V()), len(graphs.V())+len(g.V())]))
 		print('disjoint union of total and', _l.index(g))
 		graphs.addGraph(g.E(), g.V())
 		# graphs = disjointunion(graphs, g)
-	elapsed_time = time.clock() - start_time
-	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
+	#elapsed_time = time.clock() - start_time
+	#print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
 	start_time = time.clock()
 	array = efficient(graphs)
 	elapsed_time = time.clock() - start_time
@@ -93,48 +93,79 @@ def compare(x):
 
 #306.2617 sec
 def efficient(_l):
-		# Initialization
-	colordict = {}  # dictionary with key=colornum and value=vertex array
+	#dictionary with key=colornum and value=array with vertices
+	colordict = {}
+
+	#for all vertices v in the list of vertices
 	for v in _l.V():
+		#color of v = degree of v
 		v.colornum = v.deg
 		if v.colornum in colordict:
-		# try:
+			#colordict[v.colornum] gives the value of colordict which is an array
+			#with vertices. v is appended to this array
 			colordict[v.colornum].append(v)
 		else:
-		# except KeyError:
+			#initilization of the color v.colornum and it's value (an array with
+			#only v in it)
 			colordict[v.colornum] = [v]
+
 	not_done = True
+	#integer with the next colornum
 	newcolor = max(colordict.keys()) + 1
 
 	while not_done:
+		#empty dictionary in which we will reconstruct colordict
 		tempcolordict = dict()
+		#empty dictionary in which we put all changes we make in one cycle of the
+		#while loop. key = vertex and value = vertex color
 		temp = dict()
+		#for all keys (colors) in the set of keys
 		for key in colordict.keys():
+			#array with all vertices of the color specified by key
 			array = colordict[key]
+			#neighbours of the first element in array
 			buren = tuple(get_nb_colors(array[0]))
+			#initilization of the color key and it's value (an array with
+			#only the first element of array in it)
 			tempcolordict[key] = [array[0]]
+			#variable that indicates whether we made changes to the value (array
+			#of vertices) of the key
 			adjusted = False
+			#for all vertices in array except the first element
+			#array[start index : stop index : step size]
 			for value in array[1::]:
+				#neighbours' colors of vertex value
 				nc = tuple(get_nb_colors(value))
+				#if the vertex neighbours colors are the same as the
+				#first element of array, append the vertex to the list
+				#of vertices with that color
 				if nc == buren:
 					tempcolordict[value.colornum].append(value)
 				else:
+					#neighbour colors are not the same, so put the vertex
+					#in a newly created color
 					if newcolor in tempcolordict:
-					# try:
 						tempcolordict[newcolor].append(value)
 					else:
-					# except KeyError:
 						tempcolordict[newcolor] = [value]
 						adjusted = True
+					#add the vertex to the dictionary temp with its new color
+					#as value
 					temp[value] = newcolor
+			#if changes were made, newcolor was used, so we increment newcolor
 			if adjusted:
 				newcolor += 1
+		#if the newly constructed dictionary is the same as the old one,
+		#the color refinement is done
 		if tempcolordict == colordict:
 			not_done = False
+		#for all vertices v in the dictionary with changes (temp),
+		#set the new colornum which is the value of temp
 		for v in temp.keys():
 			v.colornum = temp[v]
+		#update colordict with the newly constructed dictionary
 		colordict = tempcolordict.copy()
-		# print('step')
+	#return an array with the colornums of all vertices
 	finalcolors = []
 	for node in _l.V():
 		finalcolors.append(node.colornum)
@@ -146,4 +177,4 @@ def efficient(_l):
 # 2 and 3 are undecided
 # 4 and 5 are isomorph
 
-compare(loadgraph("GI_TestInstancesWeek1/crefBM_6_7680.grl", readlist=True))
+compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
