@@ -41,7 +41,11 @@ class vertex():
 		self.deg = 0
 		self.nbs = []
 		# self.update()
-		
+
+
+	def get_label(self):
+		return self._label
+
 	def __repr__(self):
 		return str(self._label)		
 		
@@ -167,9 +171,32 @@ class graph():
 		# handle directed graphs.
 		self._simple=simple
 		self._nextlabel=0
+		self._colordict = dict()
+		self.init_colordict()
 		for i in range(n):
 			self.addvertex()
 
+	def init_colordict(self):
+		for v in self.V():
+			v.colornum = v.deg
+			if v.colornum in self._colordict:
+				self._colordict[v.colornum].append(v)
+			else:
+				self._colordict[v.colornum] = [v]
+
+	def update_colordict(self, oldcolor, newcolor, i):
+		v = self.V()[i]
+		# print(v, v.colornum, oldcolor, newcolor)
+		# print(self._colordict)
+		self._colordict[oldcolor].remove(v)
+		if newcolor in self._colordict:
+			self._colordict[newcolor].append(v)
+		else:
+			self._colordict[newcolor] = [v]
+		v.colornum = newcolor
+
+	def get_colordict(self):
+		return self._colordict
 		
 	def __repr__(self):
 		return 'V='+str(self._V)+'\nE='+str(self._E)	

@@ -3,6 +3,7 @@ __author__ = 'Mark'
 from graphIO import *
 from Ex1_makegraphs import disjointunion
 import time
+import copy
 
 #360.3973 sec
 def refine_colors(_l):
@@ -51,6 +52,32 @@ def refine_colors(_l):
 
 	return finalcolors
 
+# def prepare_graph(_l):
+# 	for v in _l.V():
+# 		v.colornum = v.deg
+#
+# def test(G):
+# 	not_done = True
+# 	while not_done:
+# 		H = copy.deepcopy(G)
+# 		colordict2 = G.get_colordict()
+# 		for color in colordict2.keys():
+# 			vertices = colordict2[color]
+# 			neighbours = tuple(get_nb_colors(vertices[0]))
+# 			for vertex in vertices:
+# 				nbcolors = tuple(get_nb_colors(vertex))
+# 				if neighbours != nbcolors:
+# 					newcolor = max(colordict2.keys()) + 1
+# 					print(color, newcolor, G.V().index(vertex))
+# 					H.update_colordict(color, newcolor, G.V().index(vertex))
+# 		if colordict2 == H.get_colordict():
+# 			not_done = False
+# 		G = H
+# 	print(G.get_colordict())
+# 	finalcolors = []
+# 	for node in G.V():
+# 		finalcolors.append(node.colornum)
+# 	return finalcolors
 
 def get_nb_colors(v):
 	return sorted(n.colornum for n in v.nbs)
@@ -70,7 +97,8 @@ def compare(x):
 	#elapsed_time = time.clock() - start_time
 	#print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
 	start_time = time.clock()
-	array = efficient(graphs)
+	graphs.init_colordict()
+	array = test(graphs)
 	elapsed_time = time.clock() - start_time
 	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
 	result = []
