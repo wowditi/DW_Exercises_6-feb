@@ -8,7 +8,7 @@ from Ex1_makegraphs import disjointunion
 def compare(x):
 	_l = x[0]
 
-	graphs = copy.deepcopy(_l[0])
+	graphs = _l[0]
 	nodes = list()
 	nodes.append(tuple([0, len(_l[0].V())]))
 
@@ -49,10 +49,13 @@ def compare(x):
 					print(i, 'and', j, 'are isomorph')
 				else:
 					print(i, 'and', j, 'are undecided')
-					disjointunition = copy.deepcopy(_l[i])
-					disjointunition.addGraph(copy.deepcopy(_l[j].E()), copy.deepcopy(_l[j].V()))
-					disjointunition.init_colordict()
-					print('count = ', count_isomorphisms(disjointunition))
+					# disjointunition = copy.deepcopy(_l[i])
+					union = disjointunion(_l[i], _l[j])
+					union.init_colordict()
+
+					# disjointunition.addGraph(copy.deepcopy(_l[j].E()), copy.deepcopy(_l[j].V()))
+					# disjointunition.init_colordict()
+					print('count = ', count_isomorphisms(union))
 
 
 def count_isomorphisms(G):
@@ -70,15 +73,20 @@ def count_isomorphisms(G):
 	if isomorph:
 		return 1
 	else:
+		nodes = G.V()
+		dictionary = dict()
+		for node in nodes:
+			dictionary[node] = node.colornum
 		colorclass = sort_label_array(colorclass)
 		x = colorclass[0]
 		num = 0
 		# print(x.colornum)
 		for y in colorclass[int(len(colorclass)/2)::]:
-			deepG = copy.deepcopy(G)
+			for node in nodes:
+				G.update_colordict(node.colornum, dictionary[node], G.V().index(node))
 			# print(G.V())
-			update_graph(deepG, G.V().index(x), G.V().index(y))
-			num += count_isomorphisms(deepG)
+			update_graph(G, G.V().index(x), G.V().index(y))
+			num += count_isomorphisms(G)
 		return num
 
 
@@ -147,4 +155,4 @@ def color_refine(G, colordict):
 		colordict = newcolordict.copy()
 	return colordict
 
-compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+compare(loadgraph("GI_instances_March4/products216.grl", readlist=True))

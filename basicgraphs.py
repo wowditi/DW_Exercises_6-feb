@@ -189,6 +189,8 @@ class graph():
 		# print(v, v.colornum, oldcolor, newcolor)
 		# print(self._colordict)
 		self._colordict[oldcolor].remove(v)
+		if len(self._colordict[oldcolor]) == 0:
+			del self._colordict[oldcolor]
 		if newcolor in self._colordict:
 			self._colordict[newcolor].append(v)
 		else:
