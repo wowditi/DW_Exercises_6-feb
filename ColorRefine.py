@@ -56,26 +56,30 @@ def compare(x):
 	print('Steps: ', step_counter)
 
 
+def insert(seq, keys, item, k):
+	i = bisect.bisect_left(keys, k)  # determine where to insert item
+	keys.insert(i, k)  # insert key of item in keys list
+	seq.insert(i, item)  # insert the item itself in the corresponding spot
+
 def fast_color_refine(G):
 	colordict = G.get_colordict()
-	# print(colordict)
 	shortest_color_length = len(G.V())
 	shortest_color = 0
 	for color in colordict.keys():
-		if color > 0 and len(colordict[color]) <= shortest_color_length:
-			shortest_color = color
-			shortest_color_length = len(colordict[color])
-
+		if color > 0:
+			if len(colordict[color]) <= shortest_color_length:
+				shortest_color = color
+				shortest_color_length = len(colordict[color])
 	queue = [shortest_color]
 	i = 0
 	newcolor = max(colordict.keys()) + 1
 	while i < len(queue):
-		incoming_nodes = [[] for x in range(newcolor)]
-
-		for nodes in colordict[queue[i]]:
-			for nb in nodes.get_nbs():
+		incoming_nodes = [[] for x in range (0,newcolor,1)]
+		incoming_nodes_labels = [[] for x in range (0,newcolor,1)]
+		for node in colordict[queue[i]]:
+			for nb in node.get_nbs():
 				if nb not in incoming_nodes[nb.colornum]:
-					incoming_nodes[nb.colornum].append(nb)
+					insert(incoming_nodes[nb.colornum], incoming_nodes_labels[nb.colornum], nb,nb.get_label())
 
 		for nodes in incoming_nodes:
 			index = incoming_nodes.index(nodes)
@@ -84,8 +88,8 @@ def fast_color_refine(G):
 				# sorted(nodes, key=lambda vertex : vertex._label)
 				# start_time = time.clock()
 				# print(nodes)
-				nodes.sort(key=lambda vertex: vertex.get_label())
-				colordict[index].sort(key=lambda vertex: vertex.get_label())
+				# nodes.sort(key=lambda vertex: vertex.get_label())
+				# colordict[index].sort(key=lambda vertex: vertex.get_label())
 				# elapsed_time = time.clock() - start_time
 				# print('Time elapsed for-loop: {0:.4f} sec'.format(elapsed_time))
 				if not nodes == colordict[index]:
@@ -193,8 +197,5 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 
-def dklfjks():
-	data = graph(6)
-	i = bisect.bisect_left(data, 7)
 compare(loadgraph("GI_march4/products72.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths1280.gr", readlist=True))
+# compare(loadgraph("benchmark/threepaths2560.gr", readlist=True))
