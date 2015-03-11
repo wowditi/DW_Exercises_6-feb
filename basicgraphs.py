@@ -10,9 +10,6 @@ However, the data structure used is quite basic and inefficient: a graph object 
 # version: 29-01-2015, Paul Bonsma
 
 
-unsafe=False	
-# Set to True for faster, but unsafe listing of all vertices and edges.
-
 class GraphError(Exception):
 	def __init__(self,message):
 		self.mess=message
@@ -38,7 +35,7 @@ class vertex():
 		self._graph=graph
 		self._label=label
 		self.color_num = 0
-		self.deg = 0
+		# self.deg = 0 #weghalen resulteert in errors
 		self.nbs = []
 		# self.update()
 
@@ -56,47 +53,26 @@ class vertex():
 		return self._graph.adj(self,other)
 
 	def add_nb(self, nb):
-		if not nb in self.nbs:
+		if nb not in self.nbs:
 			self.nbs.append(nb)
+			self.nbs.sort(key=lambda vertex: vertex.get_label())
 
 	def del_nb(self, nb):
 		if nb in self.nbs:
 			self.nbs.remove(nb)
-
-	# def inclist(self):
-	# 	"""
-	# 	Returns the list of edges incident with vertex <self>.
-	# 	"""
-	# 	incl=[]
-	# 	for e in self._graph._E:
-	# 		if e.incident(self):
-	# 			incl.append(e)
-	# 	return incl
 		
-	def nbs(self):
+	def get_nbs(self):
 		"""
 		Returns the list of neighbors of vertex <self>.
 		In case of parallel edges: duplicates are not removed from this list!
-		"""		
-		# nbl=[]
-		# for e in self.inclist():
-		# 	nbl.append(e.otherend(self))
+		"""
 		return self.nbs
 
-	# def update(self):
-	# 	self.deg = len(self.inclist())
-
-	def inc_deg(self):
-		self.deg += 1
-
-	def dec_deg(self):
-		self.deg -= 1
-
-	def deg(self):
+	def get_deg(self):
 		"""
 		Returns the degree of vertex <self>.
 		"""
-		return self.deg
+		return len(self.get_nbs())
 		
 class edge():
 	"""
@@ -172,25 +148,23 @@ class graph():
 		self._simple=simple
 		self._nextlabel=0
 		self._colordict = dict()
-		self.init_colordict()
 		for i in range(n):
 			self.addvertex()
 
 	def init_colordict(self):
 		for v in self.V():
-			v.colornum = v.deg
+			v.colornum = v.get_deg()
 			if v.colornum in self._colordict:
 				self._colordict[v.colornum].append(v)
 			else:
 				self._colordict[v.colornum] = [v]
 
-	def update_colordict(self, oldcolor, newcolor, i):
-		v = self.V()[i]
-		# print(v, v.colornum, oldcolor, newcolor)
+	def update_colordict(self, v, newcolor):
+		# print(v, v.colornum)
 		# print(self._colordict)
-		self._colordict[oldcolor].remove(v)
-		if len(self._colordict[oldcolor]) == 0:
-			del self._colordict[oldcolor]
+		self._colordict[v.colornum].remove(v)
+		if len(self._colordict[v.colornum]) == 0:
+			del self._colordict[v.colornum]
 		if newcolor in self._colordict:
 			self._colordict[newcolor].append(v)
 		else:
@@ -207,19 +181,13 @@ class graph():
 		"""
 		Returns the list of vertices of the graph.
 		"""
-		if unsafe:	# but fast
-			return self._V
-		else:
-			return self._V[:]	# return a *copy* of this list
+		return self._V
 			
 	def E(self):
 		"""
 		Returns the list of edges of the graph.
 		"""
-		if unsafe:	# but fast
-			return self._E
-		else:
-			return self._E[:]	# return a *copy* of this list
+		return self._E
 	
 	def __getitem__(self,i):
 		"""
@@ -260,9 +228,7 @@ class graph():
 			raise GraphError(
 				'Edges of a graph G must be between vertices of G')
 		e=edge(tail,head)
-		tail.inc_deg()
 		tail.add_nb(head)
-		head.inc_deg()
 		head.add_nb(tail)
 		self._E.append(e)
 		return e
@@ -277,7 +243,6 @@ class graph():
 			if (e._tail==u and e._head==v) or (e._tail==v and e._head==u):
 				return e
 		return None
-		
 
 	def adj(self,u,v):
 		"""
@@ -294,9 +259,9 @@ class graph():
 		"""
 		return self._directed
 
-	def addGraph(self, E, V):
-		for v in V:
-			v._label = self._nextlabel
-			self._nextlabel+=1
-		self._V.extend(V)
-		self._E.extend(E)
+	# def addGraph(self, E, V):
+	# 	for v in V:
+	# 		v._label = self._nextlabel
+	# 		self._nextlabel+=1
+	# 	self._V.extend(V)
+	# 	self._E.extend(E)

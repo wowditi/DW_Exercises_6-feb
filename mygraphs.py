@@ -3,9 +3,7 @@ import basicgraphs
 class graph(basicgraphs.graph):
 	def deledge(self,edge):
 		if edge in self._E:
-			edge.head().dec_deg()
 			edge.head().del_nb(edge.tail())
-			edge.tail().dec_deg()
 			edge.tail().del_nb(edge.head())
 			index=self._E.index(edge)
 			del self._E[index]
