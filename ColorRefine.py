@@ -91,7 +91,7 @@ def fast_color_refine(G):
 				else:
 					queue.append(newcolor)
 				for node in nodes:
-					G.update_colordict(node, newcolor)
+					G.update_colordict_fast(node, newcolor)
 				newcolor += 1
 		i += 1
 	return G.get_colordict()
@@ -157,11 +157,9 @@ def count_isomorphisms(G):
 		colorclass.sort(key=lambda vertex: vertex.get_label())
 		x = colorclass[0]
 		num = 0
-		# print(x.colornum)
 		for y in colorclass[int(len(colorclass)/2)::]:
 			for node in nodes:
 				G.update_colordict(node, dictionary[node])
-			# print(G.V())
 			update_graph(G, G.V().index(x), G.V().index(y))
 			num += count_isomorphisms(G)
 		return num
@@ -178,15 +176,14 @@ def sort_label_array(array):
 	return final_array
 
 
-#update_colordict(self, oldcolor, newcolor, i):
 def update_graph(G, x, y):
 	newcolor = max(G.get_colordict().keys()) + 1
 	G.update_colordict(G.V()[x], newcolor)
 	G.update_colordict(G.V()[y], newcolor)
 
 start_time = time.clock()
-# compare(loadgraph("GI_march4/products72.grl", readlist=True))
+# compare(loadgraph("GI_march4/products216.grl", readlist=True))
 compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
-# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_4098.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
