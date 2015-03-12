@@ -22,9 +22,10 @@ def compare(x):
 		disjoint_union = disjointunion(disjoint_union, g)
 
 	disjoint_union.init_colordict()
-	fast_color_refine(disjoint_union)
 
-	elapsed_time = time.clock() - start_time
+	start_time1 = time.clock()
+	fast_color_refine(disjoint_union)
+	elapsed_time = time.clock() - start_time1
 	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
 	print('Steps: ', step_counter)
 
@@ -61,6 +62,7 @@ def insert(seq, keys, item, k):
 	keys.insert(i, k)  # insert key of item in keys list
 	seq.insert(i, item)  # insert the item itself in the corresponding spot
 
+
 def fast_color_refine(G):
 	colordict = G.get_colordict()
 	shortest_color_length = len(G.V())
@@ -74,38 +76,26 @@ def fast_color_refine(G):
 	i = 0
 	newcolor = max(colordict.keys()) + 1
 	while i < len(queue):
-		incoming_nodes = [[] for x in range (0,newcolor,1)]
-		incoming_nodes_labels = [[] for x in range (0,newcolor,1)]
+		incoming_nodes_dict = dict()
 		for node in colordict[queue[i]]:
 			for nb in node.get_nbs():
-				if nb not in incoming_nodes[nb.colornum]:
-					insert(incoming_nodes[nb.colornum], incoming_nodes_labels[nb.colornum], nb,nb.get_label())
-
-		for nodes in incoming_nodes:
-			index = incoming_nodes.index(nodes)
-			if index in colordict.keys():
-				# print(sorted(nodes,key=lambda vertex : vertex._label))
-				# sorted(nodes, key=lambda vertex : vertex._label)
-				# start_time = time.clock()
-				# print(nodes)
-				# nodes.sort(key=lambda vertex: vertex.get_label())
-				# colordict[index].sort(key=lambda vertex: vertex.get_label())
-				# elapsed_time = time.clock() - start_time
-				# print('Time elapsed for-loop: {0:.4f} sec'.format(elapsed_time))
-				if not nodes == colordict[index]:
-					if len(nodes) > len(colordict[index]) and index not in queue:
-						queue.append(index)
-					else:
-						queue.append(newcolor)
-					for node in nodes:
-						G.update_colordict(node, newcolor)
-					newcolor += 1
-
+				color = nb.colornum
+				if color not in incoming_nodes_dict:
+					incoming_nodes_dict[color] = [nb]
+				elif nb not in incoming_nodes_dict[color]:
+					incoming_nodes_dict[color].append(nb)
+		for color in incoming_nodes_dict.keys():
+			nodes = incoming_nodes_dict[color]
+			nodes.sort(key=lambda vertex: vertex.get_label())
+			if not nodes == colordict[color]:
+				if len(nodes) > len(colordict[color]) and color not in queue:
+					queue.append(color)
+				else:
+					queue.append(newcolor)
+				for node in nodes:
+					G.update_colordict(node, newcolor)
+				newcolor += 1
 		i += 1
-		global step_counter
-		step_counter += 1
-	# elapsed_time = time.clock() - start_time
-	# print('Time elapsed while-loop: {0:.4f} sec'.format(elapsed_time))
 	return G.get_colordict()
 
 
@@ -198,4 +188,5 @@ def update_graph(G, x, y):
 
 
 compare(loadgraph("GI_march4/products72.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths2560.gr", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
