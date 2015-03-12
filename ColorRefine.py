@@ -23,11 +23,10 @@ def compare(x):
 
 	disjoint_union.init_colordict()
 
-	start_time1 = time.clock()
+	start_time2 = time.clock()
 	fast_color_refine(disjoint_union)
-	elapsed_time = time.clock() - start_time1
-	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
-	print('Steps: ', step_counter)
+	elapsed_time2 = time.clock() - start_time2
+	print('Time elapsed fast refine: {0:.4f} sec'.format(elapsed_time2))
 
 	array = []
 	for vertex in disjoint_union.V():
@@ -53,8 +52,7 @@ def compare(x):
 					union.init_colordict()
 					print('count = ', count_isomorphisms(union))
 	elapsed_time = time.clock() - start_time
-	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
-	print('Steps: ', step_counter)
+	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed_time))
 
 
 def insert(seq, keys, item, k):
@@ -186,7 +184,9 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[x], newcolor)
 	G.update_colordict(G.V()[y], newcolor)
 
-
-compare(loadgraph("GI_march4/products72.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+start_time = time.clock()
+# compare(loadgraph("GI_march4/products72.grl", readlist=True))
+compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
 # compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+elapsed_time = time.clock() - start_time
+print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
