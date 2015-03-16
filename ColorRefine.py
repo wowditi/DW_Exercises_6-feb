@@ -64,8 +64,8 @@ def compare(x):
 		if len(isolist[i]) > 1:
 			for h in range(len(isolist[i])):
 				for k in range(h+1, len(isolist[i])):
-					isolist[h].append(h)
-					isolist[k].append(k)
+					isolist[h].append(k)
+					isolist[k].append(h)
 	print(isolist)
 	elapsed_time = time.clock() - start_time
 	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed_time))
@@ -156,12 +156,18 @@ def get_nb_colors(v):
 def count_isomorphisms(G):
 	finaldict = fast_color_refine(G)
 	isomorph = True
-	colorclass = {}
+	colorclass = []
 	for color in finaldict.keys():
-		if len(finaldict[color]) >= 4:
-			colorclass = finaldict[color]
-			isomorph = False
-		if len(finaldict[color])%2 == 1:
+		length = len(finaldict[color])
+		if length >= 4:
+			colorlen = len(colorclass)
+			if colorlen == 0:
+				colorclass = finaldict[color]
+				isomorph = False
+			elif length <= colorlen:
+				colorclass = finaldict[color]
+				isomorph = False
+		if length % 2 == 1:
 			return 0
 	if isomorph:
 		return 1
@@ -181,15 +187,15 @@ def count_isomorphisms(G):
 		return num
 
 
-def sort_label_array(array):
-	label_array = []
-	for n in array:
-		label_array.append(n.get_label())
-	label_array = sorted(label_array)
-	final_array = [0 for x in range(len(label_array))]
-	for i in array:
-		final_array[label_array.index(i.get_label())] = i
-	return final_array
+# def sort_label_array(array):
+# 	label_array = []
+# 	for n in array:
+# 		label_array.append(n.get_label())
+# 	label_array = sorted(label_array)
+# 	final_array = [0 for x in range(len(label_array))]
+# 	for i in array:
+# 		final_array[label_array.index(i.get_label())] = i
+# 	return final_array
 
 
 def update_graph(G, x, y):
