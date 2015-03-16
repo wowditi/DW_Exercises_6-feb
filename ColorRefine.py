@@ -35,22 +35,38 @@ def compare(x):
 	for n in graph_ranges:
 		result.append(sorted(array[n[0]:n[1]:]))
 
+	isolist = dict()
 	for i in range(len(result)):
-		for j in range(i+1, len(result)):
-			if result[i] == result[j]:
-				sort = sorted(result[i])
-				isomorph = True
-				for k in range(1, len(sort)):
-					if sort[k] == sort[k-1]:
-						isomorph = False
-						break
-				if isomorph:
-					print(i, 'and', j, 'are isomorph')
-				else:
-					print(i, 'and', j, 'are undecided')
-					union = disjointunion(graph_list[i], graph_list[j])
-					union.init_colordict()
-					print('count = ', count_isomorphisms(union))
+		isolist[i] = []
+	for i in range(len(result)):
+		if len(isolist[i]) == 0:
+			for j in range(i+1, len(result)):
+				if len(isolist[j]) == 0 and result[i] == result[j]:
+					sort = sorted(result[i])
+					isomorph = True
+					for k in range(1, len(sort)):
+						if sort[k] == sort[k-1]:
+							isomorph = False
+							break
+					if isomorph:
+						print(i, 'and', j, 'are isomorph')
+						isolist[i].append(j)
+						isolist[j].append(i)
+					else:
+						print(i, 'and', j, 'are undecided')
+						union = disjointunion(graph_list[i], graph_list[j])
+						union.init_colordict()
+						count = count_isomorphisms(union)
+						if count > 0:
+							isolist[i].append(j)
+							isolist[j].append(i)
+						print('count = ', count)
+		if len(isolist[i]) > 1:
+			for h in range(len(isolist[i])):
+				for k in range(h+1, len(isolist[i])):
+					isolist[h].append(h)
+					isolist[k].append(k)
+	print(isolist)
 	elapsed_time = time.clock() - start_time
 	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed_time))
 
@@ -182,8 +198,8 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 start_time = time.clock()
-# compare(loadgraph("GI_march4/products216.grl", readlist=True))
-compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
-# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_4098.grl", readlist=True))
+compare(loadgraph("GI_march4/products216.grl", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
