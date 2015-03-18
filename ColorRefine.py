@@ -10,7 +10,8 @@ import basicpermutationgroup
 
 step_counter = 0
 autolist = []
-
+timer = 0
+timer2 = 0
 
 def generate_automorphism(G, trivial):
 	finaldict = fast_color_refine(G)
@@ -35,11 +36,12 @@ def generate_automorphism(G, trivial):
 			vertices = finaldict[color]
 			f[vertices[0].get_label()-size] = vertices[1].get_label()-size
 		perm = permutation(len(f), mapping=f)
-		# print(perm)
+		start_time2 = time.clock()
 		if membership_testing(autolist, perm):
+			global timer
+			timer += time.clock() - start_time2
+			# print('Time elapsed fast refine: {0:.4f} sec'.format(elapsed_time2))
 			autolist.append(perm)
-			# print(autolist)
-
 		return 1
 	else:
 		nodes = G.V()
@@ -70,7 +72,9 @@ def checkautomorphisms(x):
 	disjoint_union = disjointunion(graph_list[0], x2)
 	disjoint_union.init_colordict()
 	generate_automorphism(disjoint_union, True)
-	autolist.append(permutation(int(len(disjoint_union.V())/2)))
+	print(timer)
+	print(timer2)
+	# autolist.append(permutation(int(len(disjoint_union.V())/2)))
 	print(autolist)
 	print(order_computation(autolist))
 
@@ -224,6 +228,7 @@ def order_computation(generators):
 
 
 def membership_testing(generators, perm):
+	start_time2 = time.clock()
 	if not generators and not perm.istrivial():
 		return True
 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
@@ -242,6 +247,8 @@ def membership_testing(generators, perm):
 				break
 	if temporary_perm.istrivial():
 		return True
+	global timer2
+	timer2 += time.clock() - start_time2
 	return membership_testing(basicpermutationgroup.Stabilizer(generators, nontrivial_vextex), temporary_perm)
 
 
