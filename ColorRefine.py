@@ -7,6 +7,52 @@ from Ex1_makegraphs import disjointunion
 
 step_counter = 0
 
+autolist = []
+
+
+def generate_automorphism(G, trivial):
+	finaldict = fast_color_refine(G)
+	automorphism = True
+	colorclass = []
+	for color in finaldict.keys():
+		length = len(finaldict[color])
+		if length >= 4:
+			colorlen = len(colorclass)
+			if colorlen == 0:
+				colorclass = finaldict[color]
+				automorphism = False
+			elif length <= colorlen:
+				colorclass = finaldict[color]
+				automorphism = False
+		if length % 2 == 1:
+			return 0
+	if automorphism:
+		f = list(len(G.V())/2)
+		for color in finaldict.keys():
+			vertices = finaldict[color]
+			f[vertices[0].get_label()] = vertices[1]
+		if membership_testing(autolist, f):
+			autolist.append(f)
+		return 1
+	else:
+		nodes = G.V()
+		dictionary = dict()
+		for node in nodes:
+			dictionary[node] = node.colornum
+		colorclass.sort(key=lambda vertex: vertex.get_label())
+		x = colorclass[0]
+		for y in colorclass[int(len(colorclass)/2)::]:
+			for node in nodes:
+				G.update_colordict(node, dictionary[node])
+			update_graph(G, G.V().index(x), G.V().index(y))
+			returned = 0
+			if y == int(len(colorclass)/2):
+				returned = generate_automorphism(G, trivial)
+			else:
+				returned = generate_automorphism(G, False)
+			if returned == 1 and not trivial:
+				break
+
 
 def compare(x):
 	start_time = time.clock()
