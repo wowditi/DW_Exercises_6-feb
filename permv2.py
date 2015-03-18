@@ -44,6 +44,7 @@ class permutation():
 		if mapping!=None:
 			if testvalidity:
 				assert len(mapping)==n
+				print(len(mapping)==n)
 				#if len(mapping)!=n:
 				#	raise permError
 				test=[0]*n

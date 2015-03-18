@@ -5,6 +5,7 @@ import bisect
 import basicpermutationgroup
 from permv2 import permutation
 from Ex1_makegraphs import disjointunion
+import basicpermutationgroup
 
 
 step_counter = 0
@@ -31,9 +32,12 @@ def generate_automorphism(G, trivial):
 		f = [0 for d in range(int(len(G.V())/2))]     # (list(int(len(G.V())/2))
 		for color in finaldict.keys():
 			vertices = finaldict[color]
-			f[vertices[0].get_label()] = vertices[1]
-		if membership_testing(autolist, f):
-			autolist.append(f)
+			f[vertices[0].get_label()] = vertices[1].get_label()
+		print(f)
+		perm = permutation(len(f), mapping=f)
+		print(perm)
+		if membership_testing(autolist, perm):
+			autolist.append(perm)
 		return 1
 	else:
 		nodes = G.V()
@@ -46,12 +50,12 @@ def generate_automorphism(G, trivial):
 			for node in nodes:
 				G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
-			returned = 0
+			nielisgek = 0
 			if y == int(len(colorclass)/2):
-				returned = generate_automorphism(G, trivial)
+				nielisgek = generate_automorphism(G, trivial)
 			else:
-				returned = generate_automorphism(G, False)
-			if returned == 1 and not trivial:
+				nielisgek = generate_automorphism(G, False)
+			if nielisgek == 1 and not trivial:
 				break
 
 def checkautomorphisms(x):
@@ -296,10 +300,10 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 start_time = time.clock()
-# checkautomorphisms(loadgraph("GI_march4/products72.grl", readlist=True))
-compare(loadgraph("GI_march4/products72.grl", readlist=True))
-# # compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
-# # compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+checkautomorphisms(loadgraph("GI_march4/products72.grl", readlist=True))
+# compare(loadgraph("GI_march4/products72.grl", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 
