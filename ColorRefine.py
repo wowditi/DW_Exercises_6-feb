@@ -44,6 +44,7 @@ def compare(x):
 				if len(isolist[j]) == 0 and result[i] == result[j]:
 					sort = sorted(result[i])
 					isomorph = True
+
 					for k in range(1, len(sort)):
 						if sort[k] == sort[k-1]:
 							isomorph = False
