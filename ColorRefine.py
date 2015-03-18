@@ -6,7 +6,6 @@ from Ex1_makegraphs import disjointunion
 
 
 step_counter = 0
-
 autolist = []
 
 
