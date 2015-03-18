@@ -2,6 +2,8 @@ from  graphIO import *
 from basicgraphs import graph
 import time
 import bisect
+import basicpermutationgroup
+from permv2 import permutation
 from Ex1_makegraphs import disjointunion
 
 
