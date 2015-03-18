@@ -28,7 +28,7 @@ def generate_automorphism(G, trivial):
 		if length % 2 == 1:
 			return 0
 	if automorphism:
-		f = list(len(G.V())/2)
+		f = [0 for d in range(int(len(G.V())/2))]     # (list(int(len(G.V())/2))
 		for color in finaldict.keys():
 			vertices = finaldict[color]
 			f[vertices[0].get_label()] = vertices[1]
@@ -54,6 +54,13 @@ def generate_automorphism(G, trivial):
 			if returned == 1 and not trivial:
 				break
 
+def checkautomorphisms(x):
+	graph_list= x[0]
+	x2 = disjointunion(graph_list[0], graph())
+	disjoint_union = disjointunion(graph_list[0], x2)
+	disjoint_union.init_colordict()
+	generate_automorphism(disjoint_union, True)
+	print(order_computation(autolist))
 
 def compare(x):
 	start_time = time.clock()
@@ -195,7 +202,44 @@ def fast_color_refine(G):
 # 		global step_counter
 # 		step_counter += 1
 # 	return colordict
+def order_computation(generators):
+	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
+	if nontrivial_vextex is None:
+		return 1
+	orbit = basicpermutationgroup.Orbit(generators, nontrivial_vextex)
+	stabilizer = basicpermutationgroup.Stabilizer(generators, nontrivial_vextex)
+	return len(orbit)*order_computation(stabilizer)
 
+def membership_testing(generators, perm):
+	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
+	if nontrivial_vextex is None:
+		return False
+	orbit, transversals = basicpermutationgroup.Orbit(generators, nontrivial_vextex, True)
+	temporary_perm = perm
+	for transversal in transversals:
+		if subset(perm.cycles()[0], transversal):
+			temporary_perm = (-transversal) * perm
+			templist = []
+			for cycle in temporary_perm.cycles():
+				for el in cycle:
+					templist.append(el)
+			if nontrivial_vextex not in templist:
+				break
+	if temporary_perm.istrivial():
+		return True
+	return membership_testing(basicpermutationgroup.Stabilizer(generators, nontrivial_vextex), temporary_perm)
+
+
+def subset(permsub, other):
+	for cycle in other.cycles():
+		list = []
+		for p in permsub:
+			if p in cycle:
+				list.append(p)
+		if list == permsub:
+			return True
+
+	return False
 
 def get_nb_colors(v):
 	return sorted(n.colornum for n in v.get_nbs())
@@ -252,8 +296,15 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 start_time = time.clock()
-compare(loadgraph("GI_march4/products216.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
-# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+# checkautomorphisms(loadgraph("GI_march4/products72.grl", readlist=True))
+compare(loadgraph("GI_march4/products72.grl", readlist=True))
+# # compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# # compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
+
+# perm = permutation(6, cycles=[[0,1,2],[4,5]])
+# perm2 = permutation(6, cycles=[[2,3]])
+# perm3 = permutation(6, cycles=[[1,3,2],[4,5]])
+# list = [perm,perm2]
+# print(membership_testing(list,perm3))
