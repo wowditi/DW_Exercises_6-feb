@@ -15,7 +15,7 @@ autolist = []
 def generate_automorphism(G, trivial):
 	finaldict = fast_color_refine(G)
 	automorphism = True
-	colorclass = []
+	colorclass = list()
 	for color in finaldict.keys():
 		length = len(finaldict[color])
 		if length >= 4:
@@ -29,15 +29,17 @@ def generate_automorphism(G, trivial):
 		if length % 2 == 1:
 			return 0
 	if automorphism:
-		f = [0 for d in range(int(len(G.V())/2))]     # (list(int(len(G.V())/2))
+		size = int(len(G.V())/2)
+		f = [0]*size  # (list(int(len(G.V())/2))
 		for color in finaldict.keys():
 			vertices = finaldict[color]
-			f[vertices[0].get_label()] = vertices[1].get_label()
-		print(f)
+			f[vertices[0].get_label()-size] = vertices[1].get_label()-size
 		perm = permutation(len(f), mapping=f)
-		print(perm)
+		# print(perm)
 		if membership_testing(autolist, perm):
 			autolist.append(perm)
+			# print(autolist)
+
 		return 1
 	else:
 		nodes = G.V()
@@ -46,17 +48,21 @@ def generate_automorphism(G, trivial):
 			dictionary[node] = node.colornum
 		colorclass.sort(key=lambda vertex: vertex.get_label())
 		x = colorclass[0]
+		first = True
 		for y in colorclass[int(len(colorclass)/2)::]:
 			for node in nodes:
 				G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
 			nielisgek = 0
-			if y == int(len(colorclass)/2):
+			if first:
+				# print(y, trivial)
+				first = False
 				nielisgek = generate_automorphism(G, trivial)
 			else:
 				nielisgek = generate_automorphism(G, False)
+			# print('niels', nielisgek)
 			if nielisgek == 1 and not trivial:
-				break
+				return 1
 
 def checkautomorphisms(x):
 	graph_list= x[0]
@@ -64,6 +70,8 @@ def checkautomorphisms(x):
 	disjoint_union = disjointunion(graph_list[0], x2)
 	disjoint_union.init_colordict()
 	generate_automorphism(disjoint_union, True)
+	autolist.append(permutation(int(len(disjoint_union.V())/2)))
+	print(autolist)
 	print(order_computation(autolist))
 
 def compare(x):
@@ -214,7 +222,10 @@ def order_computation(generators):
 	stabilizer = basicpermutationgroup.Stabilizer(generators, nontrivial_vextex)
 	return len(orbit)*order_computation(stabilizer)
 
+
 def membership_testing(generators, perm):
+	if not generators and not perm.istrivial():
+		return True
 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
 	if nontrivial_vextex is None:
 		return False
