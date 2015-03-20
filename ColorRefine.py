@@ -72,10 +72,10 @@ def checkautomorphisms(x):
 	disjoint_union = disjointunion(graph_list[0], x2)
 	disjoint_union.init_colordict()
 	generate_automorphism(disjoint_union, True)
-	print(timer)
-	print(timer2)
+	print("total ", timer)
+	# print(timer2)
 	# autolist.append(permutation(int(len(disjoint_union.V())/2)))
-	print(autolist)
+	# print(autolist)
 	print(order_computation(autolist))
 
 def compare(x):
@@ -317,16 +317,25 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[x], newcolor)
 	G.update_colordict(G.V()[y], newcolor)
 
-start_time = time.clock()
-checkautomorphisms(loadgraph("GI_march4/products72.grl", readlist=True))
+# start_time = time.clock()
+# checkautomorphisms(loadgraph("GI_march4/products72.grl", readlist=True))
 # compare(loadgraph("GI_march4/products72.grl", readlist=True))
 # compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
 # compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
-elapsed_time = time.clock() - start_time
-print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
+# elapsed_time = time.clock() - start_time
+# print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 
-# perm = permutation(6, cycles=[[0,1,2],[4,5]])
+perm = permutation(6, cycles=[[0, 1, 2], [4, 5]])
+perm2 = permutation(6, cycles=[[2, 3]])
+el = permutation(6, cycles=[[0, 3, 2], [4, 5]])
+test = []
+test.append(perm)
+test.append(perm2)
+membership_testing(test, el)
+#
+# print(basicpermutationgroup.Orbit(test, 1, True))
 # perm2 = permutation(6, cycles=[[2,3]])
 # perm3 = permutation(6, cycles=[[1,3,2],[4,5]])
 # list = [perm,perm2]
+
 # print(membership_testing(list,perm3))
