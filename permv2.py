@@ -5,16 +5,14 @@ Convention: the ground set is labeled 0...n-1.
 Remark: composition / multiplication is reversed compared to the earlier version 
 (ADS practicum 0): Now P*Q means apply Q first, then P.
 """
-
-
+import time
 # permv2: based on permv2SOL / perm2
 # Paul Bonsma, 18-03-2015.
-
-testvalidity=True	
+testvalidity=False
 	# Check whether permutations are initialized correctly
 	# (Whether they are bijections to 0..n-1, etc).
 	# Set to <False> for slightly faster, but possibly error prone initialization.
-safeInit=True
+safeInit=False
 	# If <True>, then permutations are initialized safely, avoiding "shared reference" 
 	# errors. Set to <False> for slightly faster, but possibly error prone initialization.
 UseReadableOutput=True
@@ -139,11 +137,12 @@ class permutation():
 		Usage: simply type P*Q to obtain the composition of P and Q. 
 		(Q is applied first.) 
 		"""
-		if self.n!=other.n:
-			raise permError
+		global timer
+		start_time = time.clock()
 		Q=[0]*self.n
 		for i in range(self.n):
 			Q[i]=self.P[other.P[i]]
+		# print(time.clock() - start_time)
 		return permutation(self.n,mapping=Q)
 		
 	def __pow__(self,i):

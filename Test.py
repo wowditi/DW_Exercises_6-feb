@@ -8,104 +8,77 @@ import time
 step_counter = 0
 
 
-#360.3973 sec
-# def refine_colors(_l):
-# 	# Initialization
-# 	colordict = {}  # dictionary with key=colornum and value=vertex array
-# 	print('start refining')
-# 	for v in _l.V():
-# 		v.colornum = v.deg
-# 		if v.colornum in colordict:
-# 			colordict[v.colornum].append(v)
-# 		else:
-# 			colordict[v.colornum] = [v]
-# 	print('initial')
-#
-# 	not_done = True
-# 	newcolor = max(colordict.keys()) + 1
-#
-# 	while not_done:
-# 		tempcolordict = dict()
-# 		for key in colordict.keys():
-# 			array = colordict[key]
-# 			buren = tuple(get_nb_colors(array[0]))
-# 			adjusted = False
-# 			for value in array[1::]:
-# 				nc = tuple(get_nb_colors(value))
-# 				if nc != buren:
-# 					tempcolordict[value] = tuple([value.colornum, newcolor])
-# 					adjusted = True
-# 			if adjusted:
-# 				newcolor += 1
-# 		if len(tempcolordict) == 0:
-# 			not_done = False
-# 		for value in tempcolordict:
-# 			old = tempcolordict[value][0]
-# 			new = tempcolordict[value][1]
-# 			colordict[old].remove(value)
-# 			value.colornum = new
-# 			if new in colordict:
-# 				colordict[new].append(value)
-# 			else:
-# 				colordict[new] = [value]
-# 		print('step')
-# 	finalcolors = []
-# 	for node in _l.V():
-# 		finalcolors.append(node.colornum)
-#
-# 	return finalcolors
-
-
 def compare(x):
-	_l = x[0]
+	starter_time = time.clock()
+	graph_list = x[0]
 
-	graphs = _l[0]
-	nodes = list()
-	nodes.append(tuple([0, len(_l[0].V())]))
+	disjoint_union = graph_list[0]
+	graph_ranges = list()
+	graph_ranges.append(tuple([0, len(graph_list[0].V())]))
 
-	for g in _l[1::]:
-		# nodes.append(tuple([len(graphs.V()), len(graphs.V())+len(g.V())]))
-		# print('disjoint union of total and', _l.index(g))
-		# graphs.addGraph(g.E(), g.V())
-		nodes.append(tuple([len(graphs.V()), len(graphs.V())+len(g.V())]))
-		print('disjoint union of total and', _l.index(g))
-		graphs = disjointunion(graphs, g)
+	for g in graph_list[1::]:
+		graph_ranges.append(tuple([len(disjoint_union.V()), len(disjoint_union.V())+len(g.V())]))
+		print('disjoint union of total and', graph_list.index(g))
+		disjoint_union = disjointunion(disjoint_union, g)
 
-	start_time = time.clock()
+	disjoint_union.init_colordict()
 
-	graphs.init_colordict()
-	colordict = prepare_graph(graphs)
-	efficient(graphs, colordict)
-
-	elapsed_time = time.clock() - start_time
-	print('Time elapsed: {0:.4f} sec'.format(elapsed_time))
-
+	starter_time2 = time.clock()
+	fast_color_refine(disjoint_union)
+	elapsed_time2 = time.clock() - starter_time2
+	print('Time elapsed fast refine: {0:.4f} sec'.format(elapsed_time2))
 
 	array = []
-	for vertex in graphs.V():
+	for vertex in disjoint_union.V():
 		array.append(vertex.colornum)
 	result = []
-	for n in nodes:
+	for n in graph_ranges:
 		result.append(sorted(array[n[0]:n[1]:]))
 
+	isolist = dict()
 	for i in range(len(result)):
-		for j in range(i+1, len(result)):
-			if result[i] == result[j]:
-				sort = sorted(result[i])
-				isomorph = True
-				for k in range(1, len(sort)):
-					if sort[k] == sort[k-1]:
-						isomorph = False
-						break
-				if isomorph:
-					print(i, 'and', j, 'are isomorph')
-				else:
-					print(i, 'and', j, 'are undecided')
-	print('Steps: ', step_counter)
+		isolist[i] = []
+	for i in range(len(result)):
+		if len(isolist[i]) == 0:
+			for j in range(i+1, len(result)):
+				if len(isolist[j]) == 0 and result[i] == result[j]:
+					sort = sorted(result[i])
+					isomorph = True
+
+					for k in range(1, len(sort)):
+						if sort[k] == sort[k-1]:
+							isomorph = False
+							break
+					if isomorph:
+						print(i, 'and', j, 'are isomorph')
+						isolist[i].append(j)
+						isolist[j].append(i)
+					else:
+						print(i, 'and', j, 'are undecided')
+						union = disjointunion(graph_list[i], graph_list[j])
+						union.init_colordict()
+						count = count_isomorphisms(union)
+						if count > 0:
+							isolist[i].append(j)
+							isolist[j].append(i)
+						print('count = ', count)
+		if len(isolist[i]) > 1:
+			for h in range(len(isolist[i])):
+				for k in range(h+1, len(isolist[i])):
+					isolist[h].append(k)
+					isolist[k].append(h)
+	print(isolist)
+	elapsed2_time = time.clock() - starter_time
+	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed2_time))
 
 
-#306.2617 sec
-def efficient(_l, colordict):
+def insert(seq, keys, item, k):
+	i = bisect.bisect_left(keys, k)  # determine where to insert item
+	keys.insert(i, k)  # insert key of item in keys list
+	seq.insert(i, item)  # insert the item itself in the corresponding spot
+
+
+def color_refine(_l, colordict):
 	not_done = True
 	newcolor = max(colordict.keys()) + 1
 
@@ -143,6 +116,40 @@ def efficient(_l, colordict):
 	# for node in _l.V():
 	# 	finalcolors.append(node.colornum)
 	return colordict
+
+
+def count_isomorphisms(G):
+	finaldict = fast_color_refine(G)
+	isomorph = True
+	colorclass = []
+	for color in finaldict.keys():
+		length = len(finaldict[color])
+		if length >= 4:
+			colorlen = len(colorclass)
+			if colorlen == 0:
+				colorclass = finaldict[color]
+				isomorph = False
+			elif length <= colorlen:
+				colorclass = finaldict[color]
+				isomorph = False
+		if length % 2 == 1:
+			return 0
+	if isomorph:
+		return 1
+	else:
+		nodes = G.V()
+		dictionary = dict()
+		for node in nodes:
+			dictionary[node] = node.colornum
+		colorclass.sort(key=lambda vertex: vertex.get_label())
+		x = colorclass[0]
+		num = 0
+		for y in colorclass[int(len(colorclass)/2)::]:
+			for node in nodes:
+				G.update_colordict(node, dictionary[node])
+			update_graph(G, G.V().index(x), G.V().index(y))
+			num += count_isomorphisms(G)
+		return num
 
 
 def get_nb_colors(v):
