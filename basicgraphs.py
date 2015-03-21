@@ -159,11 +159,16 @@ class graph():
 			else:
 				self._colordict[v.colornum] = [v]
 
+	def check_colordict(self):
+		for color in self._colordict.keys():
+			length = len(self._colordict[color])
+			if length == 0:
+				self._colordict.pop(color)
 
 	def update_colordict(self, v, newcolor):
 		self._colordict[v.colornum].remove(v)
 		if len(self._colordict[v.colornum]) == 0:
-			del self._colordict[v.colornum]
+			self._colordict.pop(v.colornum)
 		if newcolor in self._colordict:
 			self._colordict[newcolor].append(v)
 		else:

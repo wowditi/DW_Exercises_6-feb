@@ -14,11 +14,15 @@ timer = time.clock() - time.clock()
 
 
 def generate_automorphism(G, trivial):
-	finaldict = fast_color_refine(G)
+	global timer
+	starter_time = time.clock()
+	finaldict, changes = fast_color_refine(G)
 	automorphism = True
 	colorclass = list()
 	for color in finaldict.keys():
 		length = len(finaldict[color])
+		if length % 2 == 1:
+			return 0, changes
 		if length >= 4:
 			colorlen = len(colorclass)
 			if colorlen == 0:
@@ -27,20 +31,18 @@ def generate_automorphism(G, trivial):
 			elif length <= colorlen:
 				colorclass = finaldict[color]
 				automorphism = False
-		if length % 2 == 1:
-			return 0
+	timer = timer + time.clock()-starter_time
 	if automorphism:
 		size = int(len(G.V())/2)
 		f = [0]*size  # (list(int(len(G.V())/2))
 		for color in finaldict.keys():
 			vertices = finaldict[color]
+			# print(vertices)
 			f[vertices[0].get_label()-size] = vertices[1].get_label()-size
 		perm = permutation(len(f), mapping=f)
 		# if membership_testing(autolist, perm):
 		autolist.append(perm)
-			# print(autolist)
-
-		return 1
+		return 1, changes
 	else:
 		nodes = G.V()
 		dictionary = dict()
@@ -50,19 +52,21 @@ def generate_automorphism(G, trivial):
 		x = colorclass[0]
 		first = True
 		for y in colorclass[int(len(colorclass)/2)::]:
-			for node in nodes:
-				G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
 			# nielisgek = 0
 			if first:
 				# print(y, trivial)
 				first = False
-				nielisgek = generate_automorphism(G, trivial)
+				nielisgek, new_changes = generate_automorphism(G, trivial)
 			else:
-				nielisgek = generate_automorphism(G, False)
-			# print('niels', nielisgek)
+				nielisgek, new_changes = generate_automorphism(G, False)
+			new_changes.append(x)
+			new_changes.append(y)
+			for node in new_changes:
+				G.update_colordict(node, dictionary[node])
 			if nielisgek == 1 and not trivial:
-				return 1
+				return 1, changes
+	return 0, changes
 
 
 def checkautomorphisms(x, i):
@@ -148,6 +152,7 @@ def compare_fast(x):
 
 
 def fast_color_refine(G):
+	changed_list = []
 	colordict = G.get_colordict()
 	shortest_color_length = len(G.V())
 	shortest_color = 0
@@ -177,10 +182,11 @@ def fast_color_refine(G):
 				else:
 					queue.append(newcolor)
 				for node in nodes:
-					G.update_colordict_fast(node, newcolor)
+					changed_list.append(node)
+					G.update_colordict(node, newcolor)
 				newcolor += 1
 		i += 1
-	return G.get_colordict()
+	return G.get_colordict(), changed_list
 
 
 def order_computation(generators):
@@ -249,7 +255,7 @@ def get_nb_colors(v):
 
 
 def count_isomorphisms_fast(G, trivial):
-	finaldict = fast_color_refine(G)
+	finaldict, unused = fast_color_refine(G)
 	isomorph = True
 	colorclass = []
 	for color in finaldict.keys():
@@ -309,5 +315,5 @@ print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 # list = [perm,perm2]
 # print(order_computation(list))
 # print("perm time ", permutation.timer)
-# print("timer ", timer)
+print("timer ", timer)
 # print("scheier timer ", basicpermutationgroup.timer)
