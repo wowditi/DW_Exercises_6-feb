@@ -1,7 +1,8 @@
 from  graphIO import *
 from basicgraphs import graph
 import time
-import bisect
+import math
+from itertools import groupby
 import basicpermutationgroup
 from permv2 import permutation
 from Ex1_makegraphs import disjointunion
@@ -70,14 +71,23 @@ def generate_automorphism(G, trivial):
 
 
 def checkautomorphisms(x, i):
-	graph_list= x[0]
-	x2 = disjointunion(graph_list[i], graph())
-	disjoint_union = disjointunion(graph_list[i], x2)
+	print("JE FUCKING AUTOMRORKALJSDF")
+	piet = x[0][i]
+	piet.init_colordict()
+	count, mygraph = preprocessing(piet)
+	length = len(mygraph.V())
+	x2 = disjointunion(mygraph, graph())
+	dict = mygraph._colordict
+	disjoint_union = disjointunion(mygraph, x2)
 	disjoint_union.init_colordict()
+	for color in dict.keys():
+		for node in dict[color]:
+			disjoint_union.update_colordict(disjoint_union.V()[mygraph.V().index(node)], color)
+			disjoint_union.update_colordict(disjoint_union.V()[mygraph.V().index(node)+length], color)
 	generate_automorphism(disjoint_union, True)
 	autolist.append(permutation(int(len(disjoint_union.V())/2)))
 	autolist2 = basicpermutationgroup.Reduce(autolist, 0)
-	return order_computation(autolist2)
+	return count * order_computation(autolist2)
 
 
 def compare_fast(x):
@@ -131,6 +141,7 @@ def compare_fast(x):
 						union = disjointunion(graph_list[i], graph_list[j])
 						union.init_colordict()
 						count = count_isomorphisms_fast(union, True)
+						print("pizza")
 						if count > 0:
 							isolist[i].append(j)
 							isolist[j].append(i)
@@ -190,6 +201,7 @@ def fast_color_refine(G):
 
 
 def order_computation(generators):
+	print("JE FUCKING ORDER")
 	starting_time = time.clock()
 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
 	if nontrivial_vextex is None:
@@ -301,10 +313,87 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 
+def preprocessing(g):
+	print("PREPROSSESING")
+	false_twin_list, twin_list = get_twins(g)
+	count = 1
+	for elem in false_twin_list:
+		count *= math.factorial(len(elem))
+	# print("TWIN", twin_list)
+	# true_list = []
+	# for elem in twin_list:
+	# 	nbs = list(elem[0].nbs).copy()
+	# 	for node in elem:
+	# 		if node is not elem[0]:
+	# 			nbs.remove(node)
+	# 	true_list.append(nbs)
+	# print("TRUE", true_list)
+	# print("voor ", count)
+	seen = []
+	# print(twin_list)
+	for elem in twin_list:
+		if elem not in seen:
+			piet = twin_list.count(elem)
+			if piet > 1:
+				seen.append(elem)
+				count *= math.factorial(twin_list.count(elem))
+	# print(seen)
+	false_twin_list.sort(key=lambda l: len(l))
+	newcolor = max(g._colordict.keys()) + 1
+	last_length = 0
+	for twinlist in false_twin_list:
+		if len(twinlist) == last_length:
+			newcolor -= last_length
+		for node in twinlist:
+			g.update_colordict(node, newcolor)
+			newcolor += 1
+		last_length = len(twinlist)
+	last_length = 0
+	seen.sort(key=lambda l: len(l))
+	for twinlist in seen:
+		if len(twinlist) == last_length:
+			newcolor -= last_length
+		for node in twinlist:
+			g.update_colordict(node, newcolor)
+			newcolor += 1
+		last_length = len(twinlist)
+	return count, g
+
+
+def get_twins(g):
+	false_twins_dict = dict()
+	twins_dict = dict()
+	for node in g.V():
+		nbs = node.get_nbs()
+		if tuple(nbs) not in false_twins_dict.keys():
+			false_twins_dict[tuple(nbs)] = [node]
+		else:
+			false_twins_dict[tuple(nbs)].append(node)
+		nbs.append(node)
+		nbs.sort(key=lambda vertex: vertex.get_label())
+		if tuple(nbs) not in twins_dict.keys():
+			twins_dict[tuple(nbs)] = [node]
+		else:
+			twins_dict[tuple(nbs)].append(node)
+	false_keys = list(false_twins_dict.keys()).copy()
+	for key in false_keys:
+		if len(false_twins_dict[key]) == 1:
+			false_twins_dict.pop(key)
+	keys = list(twins_dict.keys()).copy()
+	for key in keys:
+		if len(twins_dict[key]) == 1:
+			twins_dict.pop(key)
+	return list(false_twins_dict.values()), list(twins_dict.values())
+
+
 start_time = time.clock()
-compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+#compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+
 # compare(loadgraph("GI_march4/products216.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+
+# compare_fast(loadgraph("march_4/bigtrees3.grl", readlist=True))
+compare_fast(loadgraph("benchmark/hugecographs.grl", readlist=True))
+
 # compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
@@ -313,7 +402,10 @@ print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 # perm2 = permutation(6, cycles=[[2,3]])
 # # perm3 = permutation(6, cycles=[[1,3,2],[4,5]])
 # list = [perm,perm2]
-# print(order_computation(list))
+# print(order_computation(list)).timer)
+
 # print("perm time ", permutation.timer)
-print("timer ", timer)
-# print("scheier timer ", basicpermutationgroup.timer)
+
+#print("timer ", timer)
+
+# print("scheier timer ", basicpermutationgroup

@@ -34,6 +34,7 @@ class vertex():
 		"""
 		self._graph=graph
 		self._label=label
+		self.edgelist = []
 		self.color_num = 0
 		# self.deg = 0 #weghalen resulteert in errors
 		self.nbs = []
@@ -159,6 +160,19 @@ class graph():
 			else:
 				self._colordict[v.colornum] = [v]
 
+	def deledge(self, e):
+		if e in self._E:
+			e.head().edgelist.remove(e)
+			e.tail().edgelist.remove(e)
+			e.head().del_nb(e.tail())
+			e.tail().del_nb(e.head())
+			self._E.remove(e)
+
+	def delvert(self, v):
+		while(v.edgelist):
+			self.deledge(v.edgelist[0])
+		self._V.remove(v)
+
 	def check_colordict(self):
 		for color in self._colordict.keys():
 			length = len(self._colordict[color])
@@ -174,7 +188,6 @@ class graph():
 		else:
 			self._colordict[newcolor] = [v]
 		v.colornum = newcolor
-
 
 	def update_colordict_fast(self, v, newcolor):
 		self._colordict[v.colornum].remove(v)
@@ -240,9 +253,11 @@ class graph():
 		if not (tail._graph==self and head._graph==self):
 			raise GraphError(
 				'Edges of a graph G must be between vertices of G')
-		e=edge(tail,head)
+		e = edge(tail, head)
 		tail.add_nb(head)
+		tail.edgelist.append(e)
 		head.add_nb(tail)
+		head.edgelist.append(e)
 		self._E.append(e)
 		return e
 
