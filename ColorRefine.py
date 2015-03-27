@@ -65,13 +65,12 @@ def generate_automorphism(G, trivial):
 			new_changes.append(y)
 			for node in new_changes:
 				G.update_colordict(node, dictionary[node])
-			if nielisgek == 1 and not trivial:
-				return 1, changes
+			if not trivial:
+				return nielisgek, changes
 	return 0, changes
 
 
 def checkautomorphisms(x, i):
-	print("JE FUCKING AUTOMRORKALJSDF")
 	piet = x[0][i]
 	piet.init_colordict()
 	count, mygraph = preprocessing(piet)
@@ -108,6 +107,7 @@ def compare_fast(x):
 
 	starter_time2 = time.clock()
 	fast_color_refine(disjoint_union)
+	print(disjoint_union._colordict)
 	elapsed_time2 = time.clock() - starter_time2
 	print('Time elapsed fast refine: {0:.4f} sec'.format(elapsed_time2))
 
@@ -140,8 +140,8 @@ def compare_fast(x):
 						print(i, 'and', j, 'are undecided')
 						union = disjointunion(graph_list[i], graph_list[j])
 						union.init_colordict()
-						count = count_isomorphisms_fast(union, True)
-						print("pizza")
+						preprocessing(union)
+						count, unused = count_isomorphisms_fast(union)
 						if count > 0:
 							isolist[i].append(j)
 							isolist[j].append(i)
@@ -177,13 +177,18 @@ def fast_color_refine(G):
 	newcolor = max(colordict.keys()) + 1
 	while i < len(queue):
 		incoming_nodes_dict = dict()
+		incoming_nodes_dict2 = dict()
 		for node in colordict[queue[i]]:
 			for nb in node.get_nbs():
 				color = nb.colornum
 				if color not in incoming_nodes_dict:
 					incoming_nodes_dict[color] = [nb]
+					incoming_nodes_dict2[color] = [nb]
 				elif nb not in incoming_nodes_dict[color]:
 					incoming_nodes_dict[color].append(nb)
+					incoming_nodes_dict2[color].append(nb)
+				else:
+					incoming_nodes_dict2[color].append(nb)
 		for color in incoming_nodes_dict.keys():
 			nodes = incoming_nodes_dict[color]
 			nodes.sort(key=lambda vertex: vertex.get_label())
@@ -196,12 +201,29 @@ def fast_color_refine(G):
 					changed_list.append(node)
 					G.update_colordict(node, newcolor)
 				newcolor += 1
+			nodes2 = incoming_nodes_dict2[color]
+			nodes2.sort(key=lambda vertex: vertex.get_label())
+			if color in colordict.keys():
+				if not nodes2 == colordict[color] and not nodes2 == colordict[newcolor-1]:
+					test = dict()
+					for node in nodes:
+						temp = nodes.count(node)
+						if temp > 1:
+							if temp in test.keys():
+								test[temp].append(node)
+							else:
+								test[temp] = [node]
+					for key in test.keys():
+						for node in test[key]:
+							G.update_colordict(node, newcolor)
+							newcolor += 1
+					if len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[newcolor-1]):
+						queue[len(queue)-1] = newcolor-1
 		i += 1
 	return G.get_colordict(), changed_list
 
 
 def order_computation(generators):
-	print("JE FUCKING ORDER")
 	starting_time = time.clock()
 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
 	if nontrivial_vextex is None:
@@ -266,12 +288,14 @@ def get_nb_colors(v):
 	return sorted(n.colornum for n in v.get_nbs())
 
 
-def count_isomorphisms_fast(G, trivial):
-	finaldict, unused = fast_color_refine(G)
+def count_isomorphisms_fast(G):
+	finaldict, changed_nodes = fast_color_refine(G)
 	isomorph = True
 	colorclass = []
 	for color in finaldict.keys():
 		length = len(finaldict[color])
+		if length % 2 == 1:
+			return 0, changed_nodes
 		if length >= 4:
 			colorlen = len(colorclass)
 			if colorlen == 0:
@@ -280,10 +304,8 @@ def count_isomorphisms_fast(G, trivial):
 			elif length <= colorlen:
 				colorclass = finaldict[color]
 				isomorph = False
-		if length % 2 == 1:
-			return 0
 	if isomorph:
-		return 1
+		return 1, changed_nodes
 	else:
 		nodes = G.V()
 		dictionary = dict()
@@ -291,20 +313,18 @@ def count_isomorphisms_fast(G, trivial):
 			dictionary[node] = node.colornum
 		colorclass.sort(key=lambda vertex: vertex.get_label())
 		x = colorclass[0]
-		first = True
 		for y in colorclass[int(len(colorclass)/2)::]:
-			for node in nodes:
-				G.update_colordict(node, dictionary[node])
+			# for node in nodes:
+			# 	G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
-			if first:
-				# print(y, trivial)
-				first = False
-				if count_isomorphisms_fast(G, True) > 0:
-					return 1
-			else:
-				if count_isomorphisms_fast(G, False) > 0:
-					return 1
-		return 0
+			temp, new_changes = count_isomorphisms_fast(G)
+			new_changes.append(x)
+			new_changes.append(y)
+			for node in new_changes:
+				G.update_colordict(node, dictionary[node])
+			if temp > 0:
+					return 1, changed_nodes
+		return 0, changed_nodes
 
 
 def update_graph(G, x, y):
@@ -314,7 +334,6 @@ def update_graph(G, x, y):
 
 
 def preprocessing(g):
-	print("PREPROSSESING")
 	false_twin_list, twin_list = get_twins(g)
 	count = 1
 	for elem in false_twin_list:
@@ -384,20 +403,20 @@ def get_twins(g):
 		if len(twins_dict[key]) == 1:
 			twins_dict.pop(key)
 	return list(false_twins_dict.values()), list(twins_dict.values())
-
-
 start_time = time.clock()
-#compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
-
-# compare(loadgraph("GI_march4/products216.grl", readlist=True))
-
-# compare_fast(loadgraph("march_4/bigtrees3.grl", readlist=True))
-compare_fast(loadgraph("benchmark/hugecographs.grl", readlist=True))
-
-# compare(loadgraph("GI_TestInstancesWeek1/crefBM_4_16.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
+# graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
+# graph.init_colordict()
+# blaat, yolo = fast_color_refine(graph)
+# print(blaat)
+# compare_fast(loadgraph("GI_march4/products216.grl", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 
+# print(checkautomorphisms(loadgraph("GI_march4/bigtrees3.grl", readlist=True), 0))
 # perm = permutation(6, cycles=[[0,1,2],[4,5]])
 # perm2 = permutation(6, cycles=[[2,3]])
 # # perm3 = permutation(6, cycles=[[1,3,2],[4,5]])
