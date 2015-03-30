@@ -15,15 +15,13 @@ timer = time.clock() - time.clock()
 
 
 def generate_automorphism(G, trivial):
-	global timer
-	starter_time = time.clock()
 	finaldict, changes = fast_color_refine(G)
 	automorphism = True
 	colorclass = list()
 	for color in finaldict.keys():
 		length = len(finaldict[color])
 		if length % 2 == 1:
-			return 0, changes
+			return changes
 		if length >= 4:
 			colorlen = len(colorclass)
 			if colorlen == 0:
@@ -32,7 +30,6 @@ def generate_automorphism(G, trivial):
 			elif length <= colorlen:
 				colorclass = finaldict[color]
 				automorphism = False
-	timer = timer + time.clock()-starter_time
 	if automorphism:
 		size = int(len(G.V())/2)
 		f = [0]*size  # (list(int(len(G.V())/2))
@@ -43,7 +40,7 @@ def generate_automorphism(G, trivial):
 		perm = permutation(len(f), mapping=f)
 		# if membership_testing(autolist, perm):
 		autolist.append(perm)
-		return 1, changes
+		return changes
 	else:
 		nodes = G.V()
 		dictionary = dict()
@@ -56,24 +53,24 @@ def generate_automorphism(G, trivial):
 			update_graph(G, G.V().index(x), G.V().index(y))
 			# nielisgek = 0
 			if first:
-				# print(y, trivial)
 				first = False
-				nielisgek, new_changes = generate_automorphism(G, trivial)
+				new_changes = generate_automorphism(G, trivial)
 			else:
-				nielisgek, new_changes = generate_automorphism(G, False)
+				new_changes = generate_automorphism(G, False)
 			new_changes.append(x)
 			new_changes.append(y)
 			for node in new_changes:
 				G.update_colordict(node, dictionary[node])
 			if not trivial:
-				return nielisgek, changes
-	return 0, changes
+				return changes
+	return changes
 
 
 def checkautomorphisms(x, i):
 	piet = x[0][i]
 	piet.init_colordict()
 	count, mygraph = preprocessing(piet)
+	# count, mygraph = 1, piet
 	length = len(mygraph.V())
 	x2 = disjointunion(mygraph, graph())
 	dict = mygraph._colordict
@@ -107,7 +104,6 @@ def compare_fast(x):
 
 	starter_time2 = time.clock()
 	fast_color_refine(disjoint_union)
-	print(disjoint_union._colordict)
 	elapsed_time2 = time.clock() - starter_time2
 	print('Time elapsed fast refine: {0:.4f} sec'.format(elapsed_time2))
 
@@ -141,15 +137,15 @@ def compare_fast(x):
 						union = disjointunion(graph_list[i], graph_list[j])
 						union.init_colordict()
 						preprocessing(union)
-						count, unused = count_isomorphisms_fast(union)
+						count, unused = count_isomorphisms_fast(union, True)
 						if count > 0:
 							isolist[i].append(j)
 							isolist[j].append(i)
-							if i not in isomorphisms_dict.keys():
-								isomorphisms_dict[i] = checkautomorphisms(x, i)
+							if j not in isomorphisms_dict.keys():
+								isomorphisms_dict[j] = checkautomorphisms(x, j)
 								global autolist
 								autolist = []
-							print('there are ', isomorphisms_dict[i], ' isomorphisms')
+							print('there are ', isomorphisms_dict[j], ' isomorphisms')
 						else:
 							print(i, 'and', j, 'are not isomorph')
 		if len(isolist[i]) > 1:
@@ -190,9 +186,12 @@ def fast_color_refine(G):
 				else:
 					incoming_nodes_dict2[color].append(nb)
 		for color in incoming_nodes_dict.keys():
+			added = False
 			nodes = incoming_nodes_dict[color]
 			nodes.sort(key=lambda vertex: vertex.get_label())
+			# print(nodes)
 			if not nodes == colordict[color]:
+				added = True
 				if len(nodes) > len(colordict[color]) and color not in queue:
 					queue.append(color)
 				else:
@@ -207,18 +206,27 @@ def fast_color_refine(G):
 				if not nodes2 == colordict[color] and not nodes2 == colordict[newcolor-1]:
 					test = dict()
 					for node in nodes:
-						temp = nodes.count(node)
+						temp = nodes2.count(node)
 						if temp > 1:
 							if temp in test.keys():
 								test[temp].append(node)
 							else:
 								test[temp] = [node]
+					itterate_color = newcolor
+					booltest = False
 					for key in test.keys():
-						for node in test[key]:
-							G.update_colordict(node, newcolor)
+						if not test[key] == colordict[color] and not test[key] == colordict[newcolor-1]:
+							for node in test[key]:
+								G.update_colordict(node, newcolor)
+								booltest = True
 							newcolor += 1
-					if len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[newcolor-1]):
-						queue[len(queue)-1] = newcolor-1
+					while booltest and itterate_color < newcolor:
+						if not added:
+							queue.append(itterate_color)
+							added = True
+						elif queue[len(queue)-1] not in G._colordict.keys() or itterate_color in G._colordict.keys() and len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
+							queue[len(queue)-1] = itterate_color
+						itterate_color += 1
 		i += 1
 	return G.get_colordict(), changed_list
 
@@ -288,7 +296,7 @@ def get_nb_colors(v):
 	return sorted(n.colornum for n in v.get_nbs())
 
 
-def count_isomorphisms_fast(G):
+def count_isomorphisms_fast(G, trivial):
 	finaldict, changed_nodes = fast_color_refine(G)
 	isomorph = True
 	colorclass = []
@@ -309,6 +317,7 @@ def count_isomorphisms_fast(G):
 	else:
 		nodes = G.V()
 		dictionary = dict()
+		first = True
 		for node in nodes:
 			dictionary[node] = node.colornum
 		colorclass.sort(key=lambda vertex: vertex.get_label())
@@ -317,13 +326,19 @@ def count_isomorphisms_fast(G):
 			# for node in nodes:
 			# 	G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
-			temp, new_changes = count_isomorphisms_fast(G)
+			if first:
+				temp, new_changes = count_isomorphisms_fast(G, trivial)
+				first = False
+			else:
+				temp, new_changes = count_isomorphisms_fast(G, False)
 			new_changes.append(x)
 			new_changes.append(y)
 			for node in new_changes:
 				G.update_colordict(node, dictionary[node])
 			if temp > 0:
 					return 1, changed_nodes
+			if not trivial:
+				return 0, changed_nodes
 		return 0, changed_nodes
 
 
@@ -412,15 +427,26 @@ def get_twins(g):
 			twins_dict.pop(key)
 	return list(false_twins_dict.values()), list(twins_dict.values()), number
 start_time = time.clock()
-# compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
+compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
 # compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
 # graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
 # print(blaat)
-compare_fast(loadgraph("GI_march4/cographs1.grl", readlist=True))
-# compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
+# compare_fast(loadgraph("GI_march4/cographs1.grl", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", reisadlt=True))
 # compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
+# x = loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True)
+# x1 = x[0][1]
+# x2 = x[0][2]
+#
+# union = disjointunion(x1,x2)
+# union.init_colordict()
+# y,z = fast_color_refine(union)
+# print(y)
+
+
 elapsed_time = time.clock() - start_time
 print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
 
