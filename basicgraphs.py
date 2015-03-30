@@ -171,6 +171,10 @@ class graph():
 	def delvert(self, v):
 		while(v.edgelist):
 			self.deledge(v.edgelist[0])
+		if len(self._colordict[v.colornum]) == 1:
+			self._colordict.pop(v.colornum)
+		else:
+			self._colordict[v.colornum].remove(v)
 		self._V.remove(v)
 
 	def check_colordict(self):

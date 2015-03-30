@@ -334,8 +334,8 @@ def update_graph(G, x, y):
 
 
 def preprocessing(g):
-	false_twin_list, twin_list = get_twins(g)
-	count = 1
+	false_twin_list, twin_list, empty_count = get_twins(g)
+	count = math.factorial(empty_count)
 	for elem in false_twin_list:
 		count *= math.factorial(len(elem))
 	# print("TWIN", twin_list)
@@ -382,18 +382,26 @@ def preprocessing(g):
 def get_twins(g):
 	false_twins_dict = dict()
 	twins_dict = dict()
+	temp = []
+	number = 0
 	for node in g.V():
-		nbs = node.get_nbs()
-		if tuple(nbs) not in false_twins_dict.keys():
-			false_twins_dict[tuple(nbs)] = [node]
+		if len(node.get_nbs()) == 0:
+			temp.append(node)
+			number += 1
 		else:
-			false_twins_dict[tuple(nbs)].append(node)
-		nbs.append(node)
-		nbs.sort(key=lambda vertex: vertex.get_label())
-		if tuple(nbs) not in twins_dict.keys():
-			twins_dict[tuple(nbs)] = [node]
-		else:
-			twins_dict[tuple(nbs)].append(node)
+			nbs = node.get_nbs()
+			if tuple(nbs) not in false_twins_dict.keys():
+				false_twins_dict[tuple(nbs)] = [node]
+			else:
+				false_twins_dict[tuple(nbs)].append(node)
+			nbs.append(node)
+			nbs.sort(key=lambda vertex: vertex.get_label())
+			if tuple(nbs) not in twins_dict.keys():
+				twins_dict[tuple(nbs)] = [node]
+			else:
+				twins_dict[tuple(nbs)].append(node)
+	for node in temp:
+		g.delvert(node)
 	false_keys = list(false_twins_dict.keys()).copy()
 	for key in false_keys:
 		if len(false_twins_dict[key]) == 1:
@@ -402,15 +410,15 @@ def get_twins(g):
 	for key in keys:
 		if len(twins_dict[key]) == 1:
 			twins_dict.pop(key)
-	return list(false_twins_dict.values()), list(twins_dict.values())
+	return list(false_twins_dict.values()), list(twins_dict.values()), number
 start_time = time.clock()
 # compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
-compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
+# compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
 # graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
 # print(blaat)
-# compare_fast(loadgraph("GI_march4/products216.grl", readlist=True))
+compare_fast(loadgraph("GI_march4/cographs1.grl", readlist=True))
 # compare(loadgraph("benchmark/threepaths10240.gr", readlist=True))
 # compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
 elapsed_time = time.clock() - start_time
