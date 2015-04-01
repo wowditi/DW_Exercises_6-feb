@@ -190,41 +190,65 @@ def fast_color_refine(G):
 			nodes = incoming_nodes_dict[color]
 			nodes.sort(key=lambda vertex: vertex.get_label())
 			# print(nodes)
-			if not nodes == colordict[color]:
-				added = True
-				if len(nodes) > len(colordict[color]) and color not in queue:
-					queue.append(color)
-				else:
-					queue.append(newcolor)
-				for node in nodes:
-					changed_list.append(node)
-					G.update_colordict(node, newcolor)
-				newcolor += 1
+			# if not nodes == colordict[color]:
+			# 	added = True
+			# 	if len(nodes) > len(colordict[color]) and color not in queue:
+			# 		queue.append(color)
+			# 	else:
+			# 		queue.append(newcolor)
+			# 	for node in nodes:
+			# 		changed_list.append(node)
+			# 		G.update_colordict(node, newcolor)
+			# 	newcolor += 1
 			nodes2 = incoming_nodes_dict2[color]
 			nodes2.sort(key=lambda vertex: vertex.get_label())
+			# if color in colordict.keys():
+			# 	if not nodes2 == colordict[color] and not nodes2 == colordict[newcolor-1]:
+			# 		test = dict()
+			# 		for node in nodes:
+			# 			temp = nodes2.count(node)
+			# 			if temp > 1:
+			# 				if temp in test.keys():
+			# 					test[temp].append(node)
+			# 				else:
+			# 					test[temp] = [node]
+			# 		itterate_color = newcolor
+			# 		booltest = False
+			# 		for key in test.keys():
+			# 			if not test[key] == colordict[color] and not test[key] == colordict[newcolor-1]:
+			# 				for node in test[key]:
+			# 					G.update_colordict(node, newcolor)
+			# 					booltest = True
+			# 				newcolor += 1
+			# 		while booltest and itterate_color < newcolor:
+			# 			if not added:
+			# 				queue.append(itterate_color)
+			# 				added = True
+			# 			elif queue[len(queue)-1] not in G._colordict.keys() or itterate_color in G._colordict.keys() and len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
+			# 				queue[len(queue)-1] = itterate_color
+			# 			itterate_color += 1
 			if color in colordict.keys():
-				if not nodes2 == colordict[color] and not nodes2 == colordict[newcolor-1]:
+				if not nodes2 == colordict[color]:
 					test = dict()
 					for node in nodes:
 						temp = nodes2.count(node)
-						if temp > 1:
-							if temp in test.keys():
-								test[temp].append(node)
-							else:
-								test[temp] = [node]
+						if temp in test.keys():
+							test[temp].append(node)
+						else:
+							test[temp] = [node]
 					itterate_color = newcolor
-					booltest = False
+					# booltest = False
 					for key in test.keys():
-						if not test[key] == colordict[color] and not test[key] == colordict[newcolor-1]:
+						if not test[key] == colordict[color]:
 							for node in test[key]:
 								G.update_colordict(node, newcolor)
-								booltest = True
+								# booltest = True
 							newcolor += 1
-					while booltest and itterate_color < newcolor:
+					while itterate_color < newcolor:
 						if not added:
 							queue.append(itterate_color)
 							added = True
-						elif queue[len(queue)-1] not in G._colordict.keys() or itterate_color in G._colordict.keys() and len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
+						elif len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
 							queue[len(queue)-1] = itterate_color
 						itterate_color += 1
 		i += 1
