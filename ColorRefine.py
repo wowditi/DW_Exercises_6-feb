@@ -2,8 +2,6 @@ from  graphIO import *
 from basicgraphs import graph
 import time
 import math
-from itertools import groupby
-import basicpermutationgroup
 from permv2 import permutation
 from Ex1_makegraphs import disjointunion
 import basicpermutationgroup
@@ -32,13 +30,11 @@ def generate_automorphism(G, trivial):
 				automorphism = False
 	if automorphism:
 		size = int(len(G.V())/2)
-		f = [0]*size  # (list(int(len(G.V())/2))
+		mapping = [0]*size
 		for color in finaldict.keys():
 			vertices = finaldict[color]
-			# print(vertices)
-			f[vertices[0].get_label()-size] = vertices[1].get_label()-size
-		perm = permutation(len(f), mapping=f)
-		# if membership_testing(autolist, perm):
+			mapping[vertices[0].get_label()-size] = vertices[1].get_label()-size
+		perm = permutation(len(mapping), mapping=mapping)
 		autolist.append(perm)
 		return changes
 	else:
@@ -51,7 +47,6 @@ def generate_automorphism(G, trivial):
 		first = True
 		for y in colorclass[int(len(colorclass)/2)::]:
 			update_graph(G, G.V().index(x), G.V().index(y))
-			# nielisgek = 0
 			if first:
 				first = False
 				new_changes = generate_automorphism(G, trivial)
@@ -67,19 +62,18 @@ def generate_automorphism(G, trivial):
 
 
 def checkautomorphisms(x, i):
-	piet = x[0][i]
-	piet.init_colordict()
-	count, mygraph = preprocessing(piet)
-	# count, mygraph = 1, piet
-	length = len(mygraph.V())
-	x2 = disjointunion(mygraph, graph())
-	dict = mygraph._colordict
-	disjoint_union = disjointunion(mygraph, x2)
+	input_graph = x[0][i]
+	input_graph.init_colordict()
+	count = preprocessing(input_graph)
+	length = len(input_graph.V())
+	graph_copy = disjointunion(input_graph, graph())
+	colordict = input_graph.get_colordict()
+	disjoint_union = disjointunion(input_graph, graph_copy)
 	disjoint_union.init_colordict()
-	for color in dict.keys():
-		for node in dict[color]:
-			disjoint_union.update_colordict(disjoint_union.V()[mygraph.V().index(node)], color)
-			disjoint_union.update_colordict(disjoint_union.V()[mygraph.V().index(node)+length], color)
+	for color in colordict.keys():
+		for node in colordict[color]:
+			disjoint_union.update_colordict(disjoint_union.V()[input_graph.V().index(node)], color)
+			disjoint_union.update_colordict(disjoint_union.V()[input_graph.V().index(node)+length], color)
 	generate_automorphism(disjoint_union, True)
 	autolist.append(permutation(int(len(disjoint_union.V())/2)))
 	autolist2 = basicpermutationgroup.Reduce(autolist, 0)
@@ -257,64 +251,13 @@ def fast_color_refine(G):
 
 
 def order_computation(generators):
-	starting_time = time.clock()
 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
 	if nontrivial_vextex is None:
 		return 1
 	orbit = basicpermutationgroup.Orbit(generators, nontrivial_vextex)
-	global timer
 	stabilizer = basicpermutationgroup.Stabilizer(generators, nontrivial_vextex)
 	lengthorbit = len(orbit)
-	timer = timer + time.clock()-starting_time
 	return lengthorbit*order_computation(stabilizer)
-
-# def order_computation(generators):
-# 	result = 1
-# 	global timer
-# 	starting_time = time.clock()
-# 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
-# 	while nontrivial_vextex is not None:
-# 		orbit = basicpermutationgroup.Orbit(generators, nontrivial_vextex)
-# 		stabilizer = basicpermutationgroup.Stabilizer(generators, nontrivial_vextex)
-# 		generators = stabilizer
-# 		nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
-# 		result *= len(orbit)
-# 	timer = timer + time.clock()-starting_time
-# 	return result
-
-
-# def membership_testing(generators, perm):
-# 	# start_time = time.clock()
-# 	if not generators and not perm.istrivial():
-# 		return True
-# 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
-# 	if nontrivial_vextex is None:
-# 		return False
-# 	orbit, transversals = basicpermutationgroup.Orbit(generators, nontrivial_vextex, True)
-# 	temporary_perm = perm
-# 	for transversal in transversals:
-# 		if subset(perm.cycles()[0], transversal):
-# 			temporary_perm = (-transversal) * perm
-# 			templist = []
-# 			for cycle in temporary_perm.cycles():
-# 				for el in cycle:
-# 					templist.append(el)
-# 			if nontrivial_vextex not in templist:
-# 				break
-# 	if temporary_perm.istrivial():
-# 		return True
-# 	return membership_testing(basicpermutationgroup.Stabilizer(generators, nontrivial_vextex), temporary_perm)
-
-
-def subset(permsub, other):
-	for cycle in other.cycles():
-		list = []
-		for p in permsub:
-			if p in cycle:
-				list.append(p)
-		if list == permsub:
-			return True
-	return False
 
 
 def get_nb_colors(v):
@@ -348,8 +291,6 @@ def count_isomorphisms_fast(G, trivial):
 		colorclass.sort(key=lambda vertex: vertex.get_label())
 		x = colorclass[0]
 		for y in colorclass[int(len(colorclass)/2)::]:
-			# for node in nodes:
-			# 	G.update_colordict(node, dictionary[node])
 			update_graph(G, G.V().index(x), G.V().index(y))
 			if first:
 				temp, new_changes = count_isomorphisms_fast(G, trivial)
@@ -452,7 +393,8 @@ def preprocessing(g):
 			for node in twinlist:
 				g.delvert(node)
 		last_length = len(twinlist)
-	return count, g
+	return count
+
 
 def get_twins(g):
 	false_twins_dict = dict()
@@ -464,12 +406,13 @@ def get_twins(g):
 			temp.append(node)
 			number += 1
 		else:
-			nbs = node.get_nbs()
+			nbs = node.get_nbs().copy()
 			if tuple(nbs) not in false_twins_dict.keys():
 				false_twins_dict[tuple(nbs)] = [node]
 			else:
 				false_twins_dict[tuple(nbs)].append(node)
 			nbs.append(node)
+			# print(node, nbs, node.get_nbs())
 			nbs.sort(key=lambda vertex: vertex.get_label())
 			if tuple(nbs) not in twins_dict.keys():
 				twins_dict[tuple(nbs)] = [node]
@@ -486,6 +429,8 @@ def get_twins(g):
 		if len(twins_dict[key]) == 1:
 			twins_dict.pop(key)
 	return list(false_twins_dict.values()), list(twins_dict.values()), number
+
+
 start_time = time.clock()
 # compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
 # compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))

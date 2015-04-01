@@ -160,7 +160,52 @@ def prepare_graph(G):
 			colordict[v.colornum] = [v]
 	return colordict
 
+# def order_computation(generators):
+# 	result = 1
+# 	global timer
+# 	starting_time = time.clock()
+# 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
+# 	while nontrivial_vextex is not None:
+# 		orbit = basicpermutationgroup.Orbit(generators, nontrivial_vextex)
+# 		stabilizer = basicpermutationgroup.Stabilizer(generators, nontrivial_vextex)
+# 		generators = stabilizer
+# 		nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
+# 		result *= len(orbit)
+# 	timer = timer + time.clock()-starting_time
+# 	return result
 
+
+# def membership_testing(generators, perm):
+# 	# start_time = time.clock()
+# 	if not generators and not perm.istrivial():
+# 		return True
+# 	nontrivial_vextex = basicpermutationgroup.FindNonTrivialOrbit(generators)
+# 	if nontrivial_vextex is None:
+# 		return False
+# 	orbit, transversals = basicpermutationgroup.Orbit(generators, nontrivial_vextex, True)
+# 	temporary_perm = perm
+# 	for transversal in transversals:
+# 		if subset(perm.cycles()[0], transversal):
+# 			temporary_perm = (-transversal) * perm
+# 			templist = []
+# 			for cycle in temporary_perm.cycles():
+# 				for el in cycle:
+# 					templist.append(el)
+# 			if nontrivial_vextex not in templist:
+# 				break
+# 	if temporary_perm.istrivial():
+# 		return True
+# 	return membership_testing(basicpermutationgroup.Stabilizer(generators, nontrivial_vextex), temporary_perm)
+
+# def subset(permsub, other):
+# 	for cycle in other.cycles():
+# 		list = []
+# 		for p in permsub:
+# 			if p in cycle:
+# 				list.append(p)
+# 		if list == permsub:
+# 			return True
+# 	return False
 
 
 
