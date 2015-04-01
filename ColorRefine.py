@@ -147,6 +147,7 @@ def compare_fast(x):
 				for k in range(h+1, len(isolist[i])):
 					isolist[h].append(k)
 					isolist[k].append(h)
+	print("yolo")
 	print(isolist)
 	elapsed2_time = time.clock() - starter_time
 	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed2_time))
@@ -314,52 +315,18 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 
-# def preprocessing(g):
-# 	false_twin_list, twin_list, empty_count = get_twins(g)
-# 	count = math.factorial(empty_count)
-# 	for elem in false_twin_list:
-# 		count *= math.factorial(len(elem))
-# 	# true_list = []
-# 	# for elem in twin_list:
-# 	# 	nbs = list(elem[0].nbs).copy()
-# 	# 	for node in elem:
-# 	# 		if node is not elem[0]:
-# 	# 			nbs.remove(node)
-# 	# 	true_list.append(nbs)
-# 	seen = []
-# 	for elem in twin_list:
-# 		if elem not in seen:
-# 			piet = twin_list.count(elem)
-# 			if piet > 1:
-# 				seen.append(elem)
-# 				count *= math.factorial(twin_list.count(elem))
-# 	false_twin_list.sort(key=lambda l: len(l))
-# 	newcolor = max(g._colordict.keys()) + 1
-# 	last_length = 0
-# 	for twinlist in false_twin_list:
-# 		if len(twinlist) == last_length:
-# 			newcolor -= last_length
-# 		for node in twinlist:
-# 			g.update_colordict(node, newcolor)
-# 			newcolor += 1
-# 		last_length = len(twinlist)
-# 	last_length = 0
-# 	seen.sort(key=lambda l: len(l))
-# 	for twinlist in seen:
-# 		if len(twinlist) == last_length:
-# 			newcolor -= last_length
-# 		for node in twinlist:
-# 			g.update_colordict(node, newcolor)
-# 			newcolor += 1
-# 		last_length = len(twinlist)
-# 	return count, g
-
-
 def preprocessing(g):
 	false_twin_list, twin_list, empty_count = get_twins(g)
 	count = math.factorial(empty_count)
 	for elem in false_twin_list:
 		count *= math.factorial(len(elem))
+	# true_list = []
+	# for elem in twin_list:
+	# 	nbs = list(elem[0].nbs).copy()
+	# 	for node in elem:
+	# 		if node is not elem[0]:
+	# 			nbs.remove(node)
+	# 	true_list.append(nbs)
 	seen = []
 	for elem in twin_list:
 		if elem not in seen:
@@ -372,29 +339,63 @@ def preprocessing(g):
 	last_length = 0
 	for twinlist in false_twin_list:
 		if len(twinlist) == last_length:
-			newcolor -= 1
-		last_length = len(twinlist)
-		if twin_list[0] in g.V():
-			g.update_colordict(twin_list[0], newcolor)
-			twin_list.remove(twin_list[0])
+			newcolor -= last_length
+		for node in twinlist:
+			g.update_colordict(node, newcolor)
 			newcolor += 1
-			for node in twinlist:
-				g.delvert(node)
+		last_length = len(twinlist)
 	last_length = 0
 	seen.sort(key=lambda l: len(l))
 	for twinlist in seen:
 		if len(twinlist) == last_length:
-			newcolor -= 1
-		last_length = len(twinlist)
-		if twin_list[0] in g.V():
-			g.update_colordict(twin_list[0], newcolor)
-			twin_list.remove(twin_list[0])
+			newcolor -= last_length
+		for node in twinlist:
+			g.update_colordict(node, newcolor)
 			newcolor += 1
-			for node in twinlist:
-				g.delvert(node)
 		last_length = len(twinlist)
 	return count
 
+
+
+# def preprocessing(g):
+# 	false_twin_list, twin_list, empty_count = get_twins(g)
+# 	count = math.factorial(empty_count)
+# 	for elem in false_twin_list:
+# 		count *= math.factorial(len(elem))
+# 	seen = []
+# 	for elem in twin_list:
+# 		if elem not in seen:
+# 			piet = twin_list.count(elem)
+# 			if piet > 1:
+# 				seen.append(elem)
+# 				count *= math.factorial(twin_list.count(elem))
+# 	false_twin_list.sort(key=lambda l: len(l))
+# 	print(false_twin_list)
+# 	newcolor = max(g._colordict.keys()) + 1
+# 	last_length = 0
+# 	for twinlist in false_twin_list:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= 1
+# 		last_length = len(twinlist)
+# 		if twinlist[0] in g.V():
+# 			g.update_colordict(twinlist[0], newcolor)
+# 			twinlist.remove(twinlist[0])
+# 			newcolor += 1
+# 			for node in twinlist:
+# 				g.delvert(node)
+# 	last_length = 0
+# 	seen.sort(key=lambda l: len(l))
+# 	for twinlist in seen:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= 1
+# 		last_length = len(twinlist)
+# 		if twinlist[0] in g.V():
+# 			g.update_colordict(twinlist[0], newcolor)
+# 			twinlist.remove(twinlist[0])
+# 			newcolor += 1
+# 			for node in twinlist:
+# 				g.delvert(node)
+# 	return count, g
 
 def get_twins(g):
 	false_twins_dict = dict()
@@ -432,9 +433,9 @@ def get_twins(g):
 
 
 start_time = time.clock()
-# compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
+compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
 # compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
-compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
+# compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
 # graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
@@ -442,11 +443,12 @@ compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
 # compare_fast(loadgraph("GI_march4/cographs1.grl", readlist=True))
 # compare(loadgraph("benchmark/threepaths10240.gr", reisadlt=True))
 # compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
-# x = loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True)
-# x1 = x[0][1]
-# x2 = x[0][2]
+# x = loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True)
+# x1 = x[0][4]
+# x2 = x[0][5]
 #
 # union = disjointunion(x1,x2)
+# writeDOT(union, "test.dot")
 # union.init_colordict()
 # y,z = fast_color_refine(union)
 # print(y)
