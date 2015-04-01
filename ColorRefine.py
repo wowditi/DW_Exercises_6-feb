@@ -141,11 +141,11 @@ def compare_fast(x):
 						if count > 0:
 							isolist[i].append(j)
 							isolist[j].append(i)
-							if j not in isomorphisms_dict.keys():
-								isomorphisms_dict[j] = checkautomorphisms(x, j)
+							if i not in isomorphisms_dict.keys():
+								isomorphisms_dict[i] = checkautomorphisms(x, j)
 								global autolist
 								autolist = []
-							print('there are ', isomorphisms_dict[j], ' isomorphisms')
+							print('there are ', isomorphisms_dict[i], ' isomorphisms')
 						else:
 							print(i, 'and', j, 'are not isomorph')
 		if len(isolist[i]) > 1:
@@ -189,7 +189,6 @@ def fast_color_refine(G):
 			added = False
 			nodes = incoming_nodes_dict[color]
 			nodes.sort(key=lambda vertex: vertex.get_label())
-			# print(nodes)
 			# if not nodes == colordict[color]:
 			# 	added = True
 			# 	if len(nodes) > len(colordict[color]) and color not in queue:
@@ -217,6 +216,7 @@ def fast_color_refine(G):
 			# 		for key in test.keys():
 			# 			if not test[key] == colordict[color] and not test[key] == colordict[newcolor-1]:
 			# 				for node in test[key]:
+			# 					changed_list.append(node)
 			# 					G.update_colordict(node, newcolor)
 			# 					booltest = True
 			# 				newcolor += 1
@@ -229,18 +229,19 @@ def fast_color_refine(G):
 			# 			itterate_color += 1
 			if color in colordict.keys():
 				if not nodes2 == colordict[color]:
-					test = dict()
+					dict_count_nodes = dict()
 					for node in nodes:
 						temp = nodes2.count(node)
-						if temp in test.keys():
-							test[temp].append(node)
+						if temp in dict_count_nodes.keys():
+							dict_count_nodes[temp].append(node)
 						else:
-							test[temp] = [node]
+							dict_count_nodes[temp] = [node]
 					itterate_color = newcolor
 					# booltest = False
-					for key in test.keys():
-						if not test[key] == colordict[color]:
-							for node in test[key]:
+					for key in dict_count_nodes.keys():
+						if not dict_count_nodes[key] == colordict[color]:
+							for node in dict_count_nodes[key]:
+								changed_list.append(node)
 								G.update_colordict(node, newcolor)
 								# booltest = True
 							newcolor += 1
@@ -248,7 +249,7 @@ def fast_color_refine(G):
 						if not added:
 							queue.append(itterate_color)
 							added = True
-						elif len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
+						elif len(G.get_colordict()[queue[len(queue)-1]]) > len(G.get_colordict()[itterate_color]):
 							queue[len(queue)-1] = itterate_color
 						itterate_color += 1
 		i += 1
@@ -372,51 +373,86 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 
+# def preprocessing(g):
+# 	false_twin_list, twin_list, empty_count = get_twins(g)
+# 	count = math.factorial(empty_count)
+# 	for elem in false_twin_list:
+# 		count *= math.factorial(len(elem))
+# 	# true_list = []
+# 	# for elem in twin_list:
+# 	# 	nbs = list(elem[0].nbs).copy()
+# 	# 	for node in elem:
+# 	# 		if node is not elem[0]:
+# 	# 			nbs.remove(node)
+# 	# 	true_list.append(nbs)
+# 	seen = []
+# 	for elem in twin_list:
+# 		if elem not in seen:
+# 			piet = twin_list.count(elem)
+# 			if piet > 1:
+# 				seen.append(elem)
+# 				count *= math.factorial(twin_list.count(elem))
+# 	false_twin_list.sort(key=lambda l: len(l))
+# 	newcolor = max(g._colordict.keys()) + 1
+# 	last_length = 0
+# 	for twinlist in false_twin_list:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
+# 			newcolor += 1
+# 		last_length = len(twinlist)
+# 	last_length = 0
+# 	seen.sort(key=lambda l: len(l))
+# 	for twinlist in seen:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
+# 			newcolor += 1
+# 		last_length = len(twinlist)
+# 	return count, g
+
+
 def preprocessing(g):
 	false_twin_list, twin_list, empty_count = get_twins(g)
 	count = math.factorial(empty_count)
 	for elem in false_twin_list:
 		count *= math.factorial(len(elem))
-	# print("TWIN", twin_list)
-	# true_list = []
-	# for elem in twin_list:
-	# 	nbs = list(elem[0].nbs).copy()
-	# 	for node in elem:
-	# 		if node is not elem[0]:
-	# 			nbs.remove(node)
-	# 	true_list.append(nbs)
-	# print("TRUE", true_list)
-	# print("voor ", count)
 	seen = []
-	# print(twin_list)
 	for elem in twin_list:
 		if elem not in seen:
 			piet = twin_list.count(elem)
 			if piet > 1:
 				seen.append(elem)
 				count *= math.factorial(twin_list.count(elem))
-	# print(seen)
 	false_twin_list.sort(key=lambda l: len(l))
 	newcolor = max(g._colordict.keys()) + 1
 	last_length = 0
 	for twinlist in false_twin_list:
 		if len(twinlist) == last_length:
-			newcolor -= last_length
-		for node in twinlist:
-			g.update_colordict(node, newcolor)
-			newcolor += 1
+			newcolor -= 1
 		last_length = len(twinlist)
+		if twin_list[0] in g.V():
+			g.update_colordict(twin_list[0], newcolor)
+			twin_list.remove(twin_list[0])
+			newcolor += 1
+			for node in twinlist:
+				g.delvert(node)
 	last_length = 0
 	seen.sort(key=lambda l: len(l))
 	for twinlist in seen:
 		if len(twinlist) == last_length:
-			newcolor -= last_length
-		for node in twinlist:
-			g.update_colordict(node, newcolor)
+			newcolor -= 1
+		last_length = len(twinlist)
+		if twin_list[0] in g.V():
+			g.update_colordict(twin_list[0], newcolor)
+			twin_list.remove(twin_list[0])
 			newcolor += 1
+			for node in twinlist:
+				g.delvert(node)
 		last_length = len(twinlist)
 	return count, g
-
 
 def get_twins(g):
 	false_twins_dict = dict()
@@ -452,8 +488,8 @@ def get_twins(g):
 	return list(false_twins_dict.values()), list(twins_dict.values()), number
 start_time = time.clock()
 # compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
-compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
-# compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
 # graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
