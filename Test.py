@@ -55,6 +55,113 @@ step_counter = 0
 #
 # 	return finalcolors
 
+# def preprocessing(g):
+# 	false_twin_list, twin_list, empty_count = get_twins(g)
+# 	count = math.factorial(empty_count)
+# 	for elem in false_twin_list:
+# 		count *= math.factorial(len(elem))
+# 	# true_list = []
+# 	# for elem in twin_list:
+# 	# 	nbs = list(elem[0].nbs).copy()
+# 	# 	for node in elem:
+# 	# 		if node is not elem[0]:
+# 	# 			nbs.remove(node)
+# 	# 	true_list.append(nbs)
+# 	seen = []
+# 	for elem in twin_list:
+# 		if elem not in seen:
+# 			piet = twin_list.count(elem)
+# 			if piet > 1:
+# 				seen.append(elem)
+# 				count *= math.factorial(twin_list.count(elem))
+# 	false_twin_list.sort(key=lambda l: len(l))
+# 	newcolor = max(g._colordict.keys()) + 1
+# 	last_length = 0
+# 	for twinlist in false_twin_list:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
+# 			newcolor += 1
+# 		last_length = len(twinlist)
+# 	last_length = 0
+# 	seen.sort(key=lambda l: len(l))
+# 	for twinlist in seen:
+# 		if len(twinlist) == last_length:
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
+# 			newcolor += 1
+# 		last_length = len(twinlist)
+# 	return count
+
+start_time = time.clock()
+# compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
+# compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
+# graph =loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=False)
+# graph.init_colordict()
+# blaat, yolo = fast_color_refine(graph)
+# compare_fast(loadgraph("GI_march4/torus24.grl", readlist=True))
+# compare(loadgraph("benchmark/threepaths10240.gr", reisadlt=True))
+find_isomorphisms(loadgraph("GI_TestInstancesWeek1/crefBM_6_15.grl", readlist=True), False, True)
+# x = loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True)
+# x1 = x[0][4]
+# x2 = x[0][5]
+#
+# union = disjointunion(x1,x2)
+# writeDOT(union, "test.dot")
+# union.init_colordict()
+# y,z = fast_color_refine(union)
+# print(y)
+
+
+elapsed_time = time.clock() - start_time
+print('Time elapsed with reading: {0:.4f} sec'.format(elapsed_time))
+
+# print(checkautomorphisms(loadgraph("GI_march4/bigtrees3.grl", readlist=True), 0))
+# perm = permutation(6, cycles=[[0,1,2],[4,5]])
+# perm2 = permutation(6, cycles=[[2,3]])
+# # perm3 = permutation(6, cycles=[[1,3,2],[4,5]])
+# list = [perm,perm2]
+# print(order_computation(list)).timer)
+
+# print("perm time ", permutation.timer)
+
+#print("timer ", timer)
+
+# print("scheier timer ", basicpermutationgroup
+
+# largest_color = 0
+					# if color not in queue and itterate_color < newcolor:
+					# 	added = True
+					# 	# queue.append(color)
+					# 	largest_color = color
+					# while itterate_color < newcolor:
+					# 	if not added:
+					# 		added = True
+					# 		largest_color = color
+					# 		# queue.append(itterate_color)
+					# 	elif len(G.get_colordict()[largest_color]) > len(G.get_colordict()[itterate_color]):
+					# 		# queue[len(queue)-1] = itterate_color
+					# 		queue.append(itterate_color)
+					# 		used_queue.append(itterate_color)
+					# 	else:
+					# 		queue.append(largest_color)
+					# 		used_queue.append(largest_color)
+					# 		largest_color = itterate_color
+					# 	itterate_color += 1
+
+
+					# while itterate_color < newcolor:
+					# 	if not added:
+					# 		queue.append(itterate_color)
+					# 		added = True
+					# 	elif len(G.get_colordict()[queue[-1]]) >= len(G.get_colordict()[itterate_color]):
+					# 		queue[-1] = itterate_color
+					# 	itterate_color += 1
+		# print(removable_queue)
+		# print(removable_queue)
 
 def compare(x):
 	_l = x[0]
