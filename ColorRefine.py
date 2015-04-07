@@ -53,13 +53,14 @@ def generate_automorphism(G, trivial):
 			new_changes.append(x)
 			new_changes.append(y)
 			for node in new_changes:
-				G.update_colordict(node, dictionary[node])
+				G.update_colordict_no_sort(node, dictionary[node])
 			if not trivial:
 				return changes
 	return changes
 
 
 def checkautomorphisms(x, i):
+	global timer
 	input_graph = x[0][i]
 	input_graph.init_colordict()
 	count = preprocessing(input_graph)
@@ -72,7 +73,9 @@ def checkautomorphisms(x, i):
 		for node in colordict[color]:
 			disjoint_union.update_colordict(disjoint_union.V()[input_graph.V().index(node)], color)
 			disjoint_union.update_colordict(disjoint_union.V()[input_graph.V().index(node)+length], color)
+	timer4 = timer
 	generate_automorphism(disjoint_union, True)
+	# print(timer-timer4)
 	global autolist
 	autolist.append(permutation(int(len(disjoint_union.V())/2)))
 	autolist2 = basicpermutationgroup.Reduce(autolist, 0)
@@ -82,6 +85,7 @@ def checkautomorphisms(x, i):
 
 
 def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
+	timer2  = time.clock()
 	isomorphisms_dict = dict()
 	graph_list = graph_list2[0]
 
@@ -94,9 +98,7 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 		disjoint_union = disjointunion(disjoint_union, g)
 
 	disjoint_union.init_colordict()
-	timer = time.clock()
 	fast_color_refine(disjoint_union)
-	print(time.clock()-timer)
 	array = []
 	for vertex in disjoint_union.V():
 		array.append(vertex.colornum)
@@ -132,9 +134,9 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 							union = disjointunion(graph_list[i], graph_list[j])
 							union.init_colordict()
 							count, unused = count_isomorphisms_fast(union, True)
-							if len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i:
+							if (len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i) and count > 0:
 								isomorphismes_list.append([i,j])
-							else:
+							elif count > 0:
 								isomorphismes_list[-1].append(j)
 							if count > 0 and Aut:
 								isolist[i].append(j)
@@ -157,10 +159,13 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 	elif Aut:
 		for i in range(len(result)):
 			print("graph ", i, ":    ", checkautomorphisms(graph_list2, i))
+	print(time.clock()-timer2)
 
 
 def fast_color_refine(G):
-	timer3 = 0
+	for key in G._colordict.keys():
+		G._colordict[key].sort(key=lambda vertex: vertex.get_label())
+	global timer
 	changed_list = []
 	colordict = G.get_colordict()
 	removable_queue = []
@@ -197,9 +202,11 @@ def fast_color_refine(G):
 					incoming_nodes_dict2[color].append(nb)
 		for color in sorted(incoming_nodes_dict.keys()):
 			nodes = incoming_nodes_dict[color]
-			nodes.sort(key=lambda vertex: vertex.get_label())
+			timer1 = time.clock()
+			# nodes.sort(key=lambda vertex: vertex.get_label())
+			timer += time.clock()-timer1
 			nodes2 = incoming_nodes_dict2[color]
-			nodes2.sort(key=lambda vertex: vertex.get_label())
+			# nodes2.sort(key=lambda vertex: vertex.get_label())
 			if color in colordict.keys():
 				if not nodes2 == colordict[color]:
 					dict_count_nodes = dict()
@@ -210,22 +217,27 @@ def fast_color_refine(G):
 						else:
 							dict_count_nodes[temp] = [node]
 					new_color_classes = [color]
+					largest_colorclass_length = 0
+					largest_colorclass = False
 					for key in dict_count_nodes.keys():
-						if not sorted(dict_count_nodes[key], key=lambda vertex: vertex.get_label()) == G.get_colordict()[color]:
+						dict_count_nodes[key].sort(key=lambda vertex: vertex.get_label())
+						if not dict_count_nodes[key] == G.get_colordict()[color]:
+							if len(dict_count_nodes[key]) > largest_color_length:
+								largest_colorclass = newcolor
+								largest_color_length = len(dict_count_nodes[key])
 							for node in dict_count_nodes[key]:
 								changed_list.append(node)
-								G.update_colordict(node, newcolor)
+								G.update_colordict_no_sort(node, newcolor)
 							new_color_classes.append(newcolor)
 							newcolor += 1
-					if color not in removable_queue:
+					if color not in removable_queue and largest_colorclass is not False:
+						new_color_classes.remove(largest_colorclass)
 						new_color_classes.sort()
-						new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
-						for colour in range(len(new_color_classes)-1):
+						for colour in range(len(new_color_classes)):
 							removable_queue.append(new_color_classes[colour])
 					else:
-						new_color_classes.remove(color)
 						new_color_classes.sort()
-						new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
+						new_color_classes.remove(color)
 						for colour in range(len(new_color_classes)):
 							removable_queue.append(new_color_classes[colour])
 

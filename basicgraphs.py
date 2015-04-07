@@ -192,7 +192,17 @@ class graph():
 		else:
 			self._colordict[newcolor] = [v]
 		v.colornum = newcolor
-		self._colordict[newcolor].sort(key=lambda vertex: vertex.get_label())
+		# self._colordict[newcolor].sort(key=lambda vertex: vertex.get_label())
+
+	def update_colordict_no_sort(self, v, newcolor):
+		self._colordict[v.colornum].remove(v)
+		if len(self._colordict[v.colornum]) == 0:
+			self._colordict.pop(v.colornum)
+		if newcolor in self._colordict:
+			self._colordict[newcolor].append(v)
+		else:
+			self._colordict[newcolor] = [v]
+		v.colornum = newcolor
 
 	def update_colordict_fast(self, v, newcolor):
 		self._colordict[v.colornum].remove(v)
