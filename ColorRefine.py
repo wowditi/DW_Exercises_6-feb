@@ -80,13 +80,11 @@ def checkautomorphisms(x, i):
 	return count * order_computation(autolist2)
 
 
-def GI_problem(x):
-	graph_list = x[0]
 
-def compare_fast(x):
+def find_isomorphisms(graph_list, GI_problem, Aut):
 	isomorphisms_dict = dict()
 	starter_time = time.clock()
-	graph_list = x[0]
+	graph_list = graph_list[0]
 
 	disjoint_union = graph_list[0]
 	graph_ranges = list()
@@ -139,7 +137,7 @@ def compare_fast(x):
 							isolist[i].append(j)
 							isolist[j].append(i)
 							if i not in isomorphisms_dict.keys():
-								isomorphisms_dict[i] = checkautomorphisms(x, j)
+								isomorphisms_dict[i] = checkautomorphisms(graph_list, j)
 								global autolist
 								autolist = []
 							print('there are ', isomorphisms_dict[i], ' isomorphisms')
@@ -158,21 +156,28 @@ def compare_fast(x):
 def fast_color_refine(G):
 	changed_list = []
 	colordict = G.get_colordict()
-	shortest_color_length = len(G.V())
-	shortest_color = 0
+	removable_queue = []
+	largest_color_length = 0
+	largest_color = 0
 	for color in colordict.keys():
 		if color > 0:
-			if len(colordict[color]) <= shortest_color_length:
-				shortest_color = color
-				shortest_color_length = len(colordict[color])
-	queue = [shortest_color]
-	removable_queue = [shortest_color]
+			if largest_color_length == 0:
+				largest_color = color
+				largest_color_length = len(colordict[color])
+			elif len(colordict[color]) >= largest_color_length:
+				removable_queue.append(largest_color)
+				largest_color = color
+				largest_color_length = len(colordict[color])
+			else:
+				removable_queue.append(color)
 	i = 0
 	newcolor = max(colordict.keys()) + 1
-	while i < len(queue):
+	while len(removable_queue) >= 1:
 		incoming_nodes_dict = dict()
 		incoming_nodes_dict2 = dict()
-		for node in colordict[removable_queue[0]]:
+		queue_zero = removable_queue[0]
+		removable_queue.pop(0)
+		for node in colordict[queue_zero]:
 			for nb in node.get_nbs():
 				color = nb.colornum
 				if color not in incoming_nodes_dict:
@@ -197,24 +202,28 @@ def fast_color_refine(G):
 							dict_count_nodes[temp].append(node)
 						else:
 							dict_count_nodes[temp] = [node]
-					itterate_color = newcolor
-					if color not in queue:
-						queue.append(color)
-						removable_queue.append(color)
-					new_color_classes = []
+					new_color_classes = [color]
 					for key in dict_count_nodes.keys():
 						if not sorted(dict_count_nodes[key], key=lambda vertex: vertex.get_label()) == sorted(G.get_colordict()[color], key=lambda vertex: vertex.get_label()):
-						# if not dict_count_nodes[key] == G.get_colordict()[color]:
 							for node in dict_count_nodes[key]:
 								changed_list.append(node)
 								G.update_colordict(node, newcolor)
 							new_color_classes.append(newcolor)
 							newcolor += 1
-					new_color_classes.sort()
-					new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
-					for colour in range(len(new_color_classes)):
-						queue.append(new_color_classes[colour])
-						removable_queue.append(new_color_classes[colour])
+					if color not in removable_queue:
+						new_color_classes.sort()
+						new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
+						for colour in range(len(new_color_classes)-1):
+							# print(len(G.get_colordict()[new_color_classes[colour]]))
+							removable_queue.append(new_color_classes[colour])
+					else:
+						new_color_classes.remove(color)
+						new_color_classes.sort()
+						new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
+						for colour in range(len(new_color_classes)):
+							# print("color", color)
+							# print(len(G.get_colordict()[new_color_classes[colour]]))
+							removable_queue.append(new_color_classes[colour])
 					# largest_color = 0
 					# if color not in queue and itterate_color < newcolor:
 					# 	added = True
@@ -244,7 +253,6 @@ def fast_color_refine(G):
 					# 		queue[-1] = itterate_color
 					# 	itterate_color += 1
 		# print(removable_queue)
-		removable_queue.pop(0)
 		# print(removable_queue)
 		i += 1
 	return G.get_colordict(), changed_list
@@ -436,17 +444,16 @@ start_time = time.clock()
 # graph =loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
-compare_fast(loadgraph("GI_march4/products216.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/torus24.grl", readlist=True))
 # compare(loadgraph("benchmark/threepaths10240.gr", reisadlt=True))
-# compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_2_49.grl", readlist=True))
-# x = loadgraph("GI_march4/products72.grl", readlist=True)
-# x1 = x[0][0]
-# x2 = x[0][1]
-# #
-# union = disjointunion(x1,x2)
-# union.init_colordict()
+find_isomorphisms(loadgraph("GI_TestInstancesWeek1/crefBM_6_15.grl", readlist=True))
+# x = loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True)
+# x1 = x[0][4]
+# x2 = x[0][5]
 #
-# # writeDOT(union, "test.dot")
+# union = disjointunion(x1,x2)
+# writeDOT(union, "test.dot")
+# union.init_colordict()
 # y,z = fast_color_refine(union)
 # print(y)
 
