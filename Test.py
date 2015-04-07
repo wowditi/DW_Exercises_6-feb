@@ -9,51 +9,51 @@ step_counter = 0
 
 
 #360.3973 sec
-# def refine_colors(_l):
-# 	# Initialization
-# 	colordict = {}  # dictionary with key=colornum and value=vertex array
-# 	print('start refining')
-# 	for v in _l.V():
-# 		v.colornum = v.deg
-# 		if v.colornum in colordict:
-# 			colordict[v.colornum].append(v)
-# 		else:
-# 			colordict[v.colornum] = [v]
-# 	print('initial')
-#
-# 	not_done = True
-# 	newcolor = max(colordict.keys()) + 1
-#
-# 	while not_done:
-# 		tempcolordict = dict()
-# 		for key in colordict.keys():
-# 			array = colordict[key]
-# 			buren = tuple(get_nb_colors(array[0]))
-# 			adjusted = False
-# 			for value in array[1::]:
-# 				nc = tuple(get_nb_colors(value))
-# 				if nc != buren:
-# 					tempcolordict[value] = tuple([value.colornum, newcolor])
-# 					adjusted = True
-# 			if adjusted:
-# 				newcolor += 1
-# 		if len(tempcolordict) == 0:
-# 			not_done = False
-# 		for value in tempcolordict:
-# 			old = tempcolordict[value][0]
-# 			new = tempcolordict[value][1]
-# 			colordict[old].remove(value)
-# 			value.colornum = new
-# 			if new in colordict:
-# 				colordict[new].append(value)
-# 			else:
-# 				colordict[new] = [value]
-# 		print('step')
-# 	finalcolors = []
-# 	for node in _l.V():
-# 		finalcolors.append(node.colornum)
-#
-# 	return finalcolors
+def refine_colors(_l):
+	# Initialization
+	colordict = {}  # dictionary with key=colornum and value=vertex array
+	print('start refining')
+	for v in _l.V():
+		v.colornum = v.deg
+		if v.colornum in colordict:
+			colordict[v.colornum].append(v)
+		else:
+			colordict[v.colornum] = [v]
+	print('initial')
+
+	not_done = True
+	newcolor = max(colordict.keys()) + 1
+
+	while not_done:
+		tempcolordict = dict()
+		for key in colordict.keys():
+			array = colordict[key]
+			buren = tuple(get_nb_colors(array[0]))
+			adjusted = False
+			for value in array[1::]:
+				nc = tuple(get_nb_colors(value))
+				if nc != buren:
+					tempcolordict[value] = tuple([value.colornum, newcolor])
+					adjusted = True
+			if adjusted:
+				newcolor += 1
+		if len(tempcolordict) == 0:
+			not_done = False
+		for value in tempcolordict:
+			old = tempcolordict[value][0]
+			new = tempcolordict[value][1]
+			colordict[old].remove(value)
+			value.colornum = new
+			if new in colordict:
+				colordict[new].append(value)
+			else:
+				colordict[new] = [value]
+		print('step')
+	finalcolors = []
+	for node in _l.V():
+		finalcolors.append(node.colornum)
+
+	return finalcolors
 
 
 def compare(x):

@@ -40,8 +40,8 @@ if __name__ == "__main__":
 	P = path(5)
 	C = cycle(5)
 	K = complete(4)
-	print(P)
-	print(C)
-	print(K)
-	print(disjointunion(disjointunion(P, C), K))
+	# print(P)
+	# print(C)
+	# print(K)
+	# print(disjointunion(disjointunion(P, C), K))
 

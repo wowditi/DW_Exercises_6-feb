@@ -32,7 +32,7 @@ def generate_automorphism(G, trivial):
 		size = int(len(G.V())/2)
 		mapping = [0]*size
 		for color in finaldict.keys():
-			vertices = finaldict[color]
+			vertices = sorted(finaldict[color], key=lambda vertex: vertex.get_label())
 			mapping[vertices[0].get_label()-size] = vertices[1].get_label()-size
 		perm = permutation(len(mapping), mapping=mapping)
 		autolist.append(perm)
@@ -79,6 +79,9 @@ def checkautomorphisms(x, i):
 	autolist2 = basicpermutationgroup.Reduce(autolist, 0)
 	return count * order_computation(autolist2)
 
+
+def GI_problem(x):
+	graph_list = x[0]
 
 def compare_fast(x):
 	isomorphisms_dict = dict()
@@ -130,7 +133,7 @@ def compare_fast(x):
 						print(i, 'and', j, 'are undecided')
 						union = disjointunion(graph_list[i], graph_list[j])
 						union.init_colordict()
-						preprocessing(union)
+						# preprocessing(union)
 						count, unused = count_isomorphisms_fast(union, True)
 						if count > 0:
 							isolist[i].append(j)
@@ -147,7 +150,6 @@ def compare_fast(x):
 				for k in range(h+1, len(isolist[i])):
 					isolist[h].append(k)
 					isolist[k].append(h)
-	print("yolo")
 	print(isolist)
 	elapsed2_time = time.clock() - starter_time
 	print('Time elapsed without reading: {0:.4f} sec'.format(elapsed2_time))
@@ -164,12 +166,13 @@ def fast_color_refine(G):
 				shortest_color = color
 				shortest_color_length = len(colordict[color])
 	queue = [shortest_color]
+	removable_queue = [shortest_color]
 	i = 0
 	newcolor = max(colordict.keys()) + 1
 	while i < len(queue):
 		incoming_nodes_dict = dict()
 		incoming_nodes_dict2 = dict()
-		for node in colordict[queue[i]]:
+		for node in colordict[removable_queue[0]]:
 			for nb in node.get_nbs():
 				color = nb.colornum
 				if color not in incoming_nodes_dict:
@@ -180,48 +183,11 @@ def fast_color_refine(G):
 					incoming_nodes_dict2[color].append(nb)
 				else:
 					incoming_nodes_dict2[color].append(nb)
-		for color in incoming_nodes_dict.keys():
-			added = False
+		for color in sorted(incoming_nodes_dict.keys()):
 			nodes = incoming_nodes_dict[color]
 			nodes.sort(key=lambda vertex: vertex.get_label())
-			# if not nodes == colordict[color]:
-			# 	added = True
-			# 	if len(nodes) > len(colordict[color]) and color not in queue:
-			# 		queue.append(color)
-			# 	else:
-			# 		queue.append(newcolor)
-			# 	for node in nodes:
-			# 		changed_list.append(node)
-			# 		G.update_colordict(node, newcolor)
-			# 	newcolor += 1
 			nodes2 = incoming_nodes_dict2[color]
 			nodes2.sort(key=lambda vertex: vertex.get_label())
-			# if color in colordict.keys():
-			# 	if not nodes2 == colordict[color] and not nodes2 == colordict[newcolor-1]:
-			# 		test = dict()
-			# 		for node in nodes:
-			# 			temp = nodes2.count(node)
-			# 			if temp > 1:
-			# 				if temp in test.keys():
-			# 					test[temp].append(node)
-			# 				else:
-			# 					test[temp] = [node]
-			# 		itterate_color = newcolor
-			# 		booltest = False
-			# 		for key in test.keys():
-			# 			if not test[key] == colordict[color] and not test[key] == colordict[newcolor-1]:
-			# 				for node in test[key]:
-			# 					changed_list.append(node)
-			# 					G.update_colordict(node, newcolor)
-			# 					booltest = True
-			# 				newcolor += 1
-			# 		while booltest and itterate_color < newcolor:
-			# 			if not added:
-			# 				queue.append(itterate_color)
-			# 				added = True
-			# 			elif queue[len(queue)-1] not in G._colordict.keys() or itterate_color in G._colordict.keys() and len(G._colordict[queue[len(queue)-1]]) > len(G._colordict[itterate_color]):
-			# 				queue[len(queue)-1] = itterate_color
-			# 			itterate_color += 1
 			if color in colordict.keys():
 				if not nodes2 == colordict[color]:
 					dict_count_nodes = dict()
@@ -232,21 +198,54 @@ def fast_color_refine(G):
 						else:
 							dict_count_nodes[temp] = [node]
 					itterate_color = newcolor
-					# booltest = False
+					if color not in queue:
+						queue.append(color)
+						removable_queue.append(color)
+					new_color_classes = []
 					for key in dict_count_nodes.keys():
-						if not dict_count_nodes[key] == colordict[color]:
+						if not sorted(dict_count_nodes[key], key=lambda vertex: vertex.get_label()) == sorted(G.get_colordict()[color], key=lambda vertex: vertex.get_label()):
+						# if not dict_count_nodes[key] == G.get_colordict()[color]:
 							for node in dict_count_nodes[key]:
 								changed_list.append(node)
 								G.update_colordict(node, newcolor)
-								# booltest = True
+							new_color_classes.append(newcolor)
 							newcolor += 1
-					while itterate_color < newcolor:
-						if not added:
-							queue.append(itterate_color)
-							added = True
-						elif len(G.get_colordict()[queue[len(queue)-1]]) > len(G.get_colordict()[itterate_color]):
-							queue[len(queue)-1] = itterate_color
-						itterate_color += 1
+					new_color_classes.sort()
+					new_color_classes.sort(key=lambda colour: len(G.get_colordict()[colour]))
+					for colour in range(len(new_color_classes)):
+						queue.append(new_color_classes[colour])
+						removable_queue.append(new_color_classes[colour])
+					# largest_color = 0
+					# if color not in queue and itterate_color < newcolor:
+					# 	added = True
+					# 	# queue.append(color)
+					# 	largest_color = color
+					# while itterate_color < newcolor:
+					# 	if not added:
+					# 		added = True
+					# 		largest_color = color
+					# 		# queue.append(itterate_color)
+					# 	elif len(G.get_colordict()[largest_color]) > len(G.get_colordict()[itterate_color]):
+					# 		# queue[len(queue)-1] = itterate_color
+					# 		queue.append(itterate_color)
+					# 		used_queue.append(itterate_color)
+					# 	else:
+					# 		queue.append(largest_color)
+					# 		used_queue.append(largest_color)
+					# 		largest_color = itterate_color
+					# 	itterate_color += 1
+
+
+					# while itterate_color < newcolor:
+					# 	if not added:
+					# 		queue.append(itterate_color)
+					# 		added = True
+					# 	elif len(G.get_colordict()[queue[-1]]) >= len(G.get_colordict()[itterate_color]):
+					# 		queue[-1] = itterate_color
+					# 	itterate_color += 1
+		# print(removable_queue)
+		removable_queue.pop(0)
+		# print(removable_queue)
 		i += 1
 	return G.get_colordict(), changed_list
 
@@ -315,53 +314,18 @@ def update_graph(G, x, y):
 	G.update_colordict(G.V()[y], newcolor)
 
 
-def preprocessing(g):
-	false_twin_list, twin_list, empty_count = get_twins(g)
-	count = math.factorial(empty_count)
-	for elem in false_twin_list:
-		count *= math.factorial(len(elem))
-	# true_list = []
-	# for elem in twin_list:
-	# 	nbs = list(elem[0].nbs).copy()
-	# 	for node in elem:
-	# 		if node is not elem[0]:
-	# 			nbs.remove(node)
-	# 	true_list.append(nbs)
-	seen = []
-	for elem in twin_list:
-		if elem not in seen:
-			piet = twin_list.count(elem)
-			if piet > 1:
-				seen.append(elem)
-				count *= math.factorial(twin_list.count(elem))
-	false_twin_list.sort(key=lambda l: len(l))
-	newcolor = max(g._colordict.keys()) + 1
-	last_length = 0
-	for twinlist in false_twin_list:
-		if len(twinlist) == last_length:
-			newcolor -= last_length
-		for node in twinlist:
-			g.update_colordict(node, newcolor)
-			newcolor += 1
-		last_length = len(twinlist)
-	last_length = 0
-	seen.sort(key=lambda l: len(l))
-	for twinlist in seen:
-		if len(twinlist) == last_length:
-			newcolor -= last_length
-		for node in twinlist:
-			g.update_colordict(node, newcolor)
-			newcolor += 1
-		last_length = len(twinlist)
-	return count
-
-
-
 # def preprocessing(g):
 # 	false_twin_list, twin_list, empty_count = get_twins(g)
 # 	count = math.factorial(empty_count)
 # 	for elem in false_twin_list:
 # 		count *= math.factorial(len(elem))
+# 	# true_list = []
+# 	# for elem in twin_list:
+# 	# 	nbs = list(elem[0].nbs).copy()
+# 	# 	for node in elem:
+# 	# 		if node is not elem[0]:
+# 	# 			nbs.remove(node)
+# 	# 	true_list.append(nbs)
 # 	seen = []
 # 	for elem in twin_list:
 # 		if elem not in seen:
@@ -370,32 +334,66 @@ def preprocessing(g):
 # 				seen.append(elem)
 # 				count *= math.factorial(twin_list.count(elem))
 # 	false_twin_list.sort(key=lambda l: len(l))
-# 	print(false_twin_list)
 # 	newcolor = max(g._colordict.keys()) + 1
 # 	last_length = 0
 # 	for twinlist in false_twin_list:
 # 		if len(twinlist) == last_length:
-# 			newcolor -= 1
-# 		last_length = len(twinlist)
-# 		if twinlist[0] in g.V():
-# 			g.update_colordict(twinlist[0], newcolor)
-# 			twinlist.remove(twinlist[0])
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
 # 			newcolor += 1
-# 			for node in twinlist:
-# 				g.delvert(node)
+# 		last_length = len(twinlist)
 # 	last_length = 0
 # 	seen.sort(key=lambda l: len(l))
 # 	for twinlist in seen:
 # 		if len(twinlist) == last_length:
-# 			newcolor -= 1
-# 		last_length = len(twinlist)
-# 		if twinlist[0] in g.V():
-# 			g.update_colordict(twinlist[0], newcolor)
-# 			twinlist.remove(twinlist[0])
+# 			newcolor -= last_length
+# 		for node in twinlist:
+# 			g.update_colordict(node, newcolor)
 # 			newcolor += 1
-# 			for node in twinlist:
-# 				g.delvert(node)
-# 	return count, g
+# 		last_length = len(twinlist)
+# 	return count
+
+
+
+def preprocessing(g):
+	false_twin_list, twin_list, empty_count = get_twins(g)
+	count = math.factorial(empty_count)
+	for elem in false_twin_list:
+		count *= math.factorial(len(elem))
+	seen = []
+	for elem in twin_list:
+		if elem not in seen:
+			piet = twin_list.count(elem)
+			if piet > 1:
+				seen.append(elem)
+				count *= math.factorial(twin_list.count(elem))
+	false_twin_list.sort(key=lambda l: len(l))
+	newcolor = max(g.get_colordict().keys()) + 1
+	last_length = 0
+	for twinlist in false_twin_list:
+		if len(twinlist) == last_length:
+			newcolor -= 1
+		last_length = len(twinlist)
+		if twinlist[0] in g.V():
+			g.update_colordict(twinlist[0], newcolor)
+			twinlist.remove(twinlist[0])
+			newcolor += 1
+			for node in twinlist:
+				g.delvert(node)
+	last_length = 0
+	seen.sort(key=lambda l: len(l))
+	for twinlist in seen:
+		if len(twinlist) == last_length:
+			newcolor -= 1
+		last_length = len(twinlist)
+		if twinlist[0] in g.V():
+			g.update_colordict(twinlist[0], newcolor)
+			twinlist.remove(twinlist[0])
+			newcolor += 1
+			for node in twinlist:
+				g.delvert(node)
+	return count
 
 def get_twins(g):
 	false_twins_dict = dict()
@@ -413,7 +411,6 @@ def get_twins(g):
 			else:
 				false_twins_dict[tuple(nbs)].append(node)
 			nbs.append(node)
-			# print(node, nbs, node.get_nbs())
 			nbs.sort(key=lambda vertex: vertex.get_label())
 			if tuple(nbs) not in twins_dict.keys():
 				twins_dict[tuple(nbs)] = [node]
@@ -433,23 +430,23 @@ def get_twins(g):
 
 
 start_time = time.clock()
-compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
+# compare_fast(loadgraph("GI_march4/bigtrees1.grl", readlist=True))
 # compare_fast(loadgraph("GI_march4/bigtrees3.grl", readlist=True))
 # compare_fast(loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True))
-# graph =loadgraph("NewBenchmarkInstances/test.gr", readlist=False)
+# graph =loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=False)
 # graph.init_colordict()
 # blaat, yolo = fast_color_refine(graph)
-# print(blaat)
-# compare_fast(loadgraph("GI_march4/cographs1.grl", readlist=True))
+compare_fast(loadgraph("GI_march4/products216.grl", readlist=True))
 # compare(loadgraph("benchmark/threepaths10240.gr", reisadlt=True))
-# compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_4_9.grl", readlist=True))
-# x = loadgraph("NewBenchmarkInstances/hugecographs.grl", readlist=True)
-# x1 = x[0][4]
-# x2 = x[0][5]
-#
+# compare_fast(loadgraph("GI_TestInstancesWeek1/crefBM_2_49.grl", readlist=True))
+# x = loadgraph("GI_march4/products72.grl", readlist=True)
+# x1 = x[0][0]
+# x2 = x[0][1]
+# #
 # union = disjointunion(x1,x2)
-# writeDOT(union, "test.dot")
 # union.init_colordict()
+#
+# # writeDOT(union, "test.dot")
 # y,z = fast_color_refine(union)
 # print(y)
 
