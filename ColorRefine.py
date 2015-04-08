@@ -112,7 +112,7 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 		for i in range(len(result)):
 			isolist[i] = []
 		for i in range(len(result)):
-			if len(isolist[i]) == 0:
+			if True: # er stond hier eerst een verkeerde if
 				for j in range(i+1, len(result)):
 					if len(isolist[j]) == 0 and result[i] == result[j]:
 						sort = sorted(result[i])
@@ -133,6 +133,7 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 						else:
 							union = disjointunion(graph_list[i], graph_list[j])
 							union.init_colordict()
+							preprocessing(union)
 							count, unused = count_isomorphisms_fast(union, True)
 							if (len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i) and count > 0:
 								isomorphismes_list.append([i,j])
@@ -145,11 +146,11 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 									isomorphisms_dict[i] = checkautomorphisms(graph_list2, j)
 									global autolist
 									autolist = []
-			if len(isolist[i]) > 1:
-				for h in range(len(isolist[i])):
-					for k in range(h+1, len(isolist[i])):
-						isolist[h].append(k)
-						isolist[k].append(h)
+			# if len(isolist[i]) > 1:
+			# 	for h in range(len(isolist[i])):
+			# 		for k in range(h+1, len(isolist[i])):
+			# 			isolist[h].append(k)
+			# 			isolist[k].append(h)
 		if not Aut:
 			for isomorphism in isomorphismes_list:
 				print(isomorphism)
@@ -391,6 +392,7 @@ def factorial(n):
 		count *= n
 		n -= 1
 	return count
+# print(checkautomorphisms(loadgraph(input("Your Inputgraph: "), readlist=True), 0))
 GI = True
 Aut = True
 if input("GI Problem?(True/False): ").lower() == "false":
