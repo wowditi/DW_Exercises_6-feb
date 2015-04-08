@@ -88,23 +88,25 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 	timer2  = time.clock()
 	isomorphisms_dict = dict()
 	graph_list = graph_list2[0]
+	if len(graph_list) > 1:
+		disjoint_union = graph_list[0]
+		graph_ranges = list()
+		graph_ranges.append(tuple([0, len(graph_list[0].V())]))
 
-	disjoint_union = graph_list[0]
-	graph_ranges = list()
-	graph_ranges.append(tuple([0, len(graph_list[0].V())]))
+		for g in graph_list[1::]:
+			graph_ranges.append(tuple([len(disjoint_union.V()), len(disjoint_union.V())+len(g.V())]))
+			disjoint_union = disjointunion(disjoint_union, g)
 
-	for g in graph_list[1::]:
-		graph_ranges.append(tuple([len(disjoint_union.V()), len(disjoint_union.V())+len(g.V())]))
-		disjoint_union = disjointunion(disjoint_union, g)
-
-	disjoint_union.init_colordict()
-	fast_color_refine(disjoint_union)
-	array = []
-	for vertex in disjoint_union.V():
-		array.append(vertex.colornum)
-	result = []
-	for n in graph_ranges:
-		result.append(sorted(array[n[0]:n[1]:]))
+		disjoint_union.init_colordict()
+		fast_color_refine(disjoint_union)
+		array = []
+		for vertex in disjoint_union.V():
+			array.append(vertex.colornum)
+		result = []
+		for n in graph_ranges:
+			result.append(sorted(array[n[0]:n[1]:]))
+	else:
+		result = [1]
 
 	if GI_problem:
 		isolist = dict()
@@ -112,45 +114,45 @@ def find_isomorphisms(graph_list2, GI_problem= True, Aut=True):
 		for i in range(len(result)):
 			isolist[i] = []
 		for i in range(len(result)):
-			if True: # er stond hier eerst een verkeerde if
-				for j in range(i+1, len(result)):
-					if len(isolist[j]) == 0 and result[i] == result[j]:
-						sort = sorted(result[i])
-						isomorph = True
+			for j in range(i + 1, len(result)):
+				if len(isolist[j]) == 0 and result[i] == result[j]:
+					sort = sorted(result[i])
+					isomorph = True
 
-						for k in range(1, len(sort)):
-							if sort[k] == sort[k-1]:
-								isomorph = False
-								break
-						if isomorph:
+					for k in range(1, len(sort)):
+						if sort[k] == sort[k - 1]:
+							isomorph = False
+							break
+					if isomorph:
+						isolist[i].append(j)
+						isolist[j].append(i)
+						isomorphisms_dict[i] = 1
+						if len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i:
+							isomorphismes_list.append([i, j])
+						else:
+							isomorphismes_list[-1].append(j)
+					else:
+						union = disjointunion(graph_list[i], graph_list[j])
+						union.init_colordict()
+						preprocessing(union)
+						count, unused = count_isomorphisms_fast(union, True)
+						if (len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i) and count > 0:
+							isomorphismes_list.append([i, j])
+						elif count > 0:
+							isomorphismes_list[-1].append(j)
+						if count > 0 and Aut:
 							isolist[i].append(j)
 							isolist[j].append(i)
-							isomorphisms_dict[i] = 1
-							if len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i:
-								isomorphismes_list.append([i,j])
-							else:
-								isomorphismes_list[-1].append(j)
-						else:
-							union = disjointunion(graph_list[i], graph_list[j])
-							union.init_colordict()
-							preprocessing(union)
-							count, unused = count_isomorphisms_fast(union, True)
-							if (len(isomorphismes_list) == 0 or isomorphismes_list[-1][0] != i) and count > 0:
-								isomorphismes_list.append([i,j])
-							elif count > 0:
-								isomorphismes_list[-1].append(j)
-							if count > 0 and Aut:
-								isolist[i].append(j)
-								isolist[j].append(i)
-								if i not in isomorphisms_dict.keys():
-									isomorphisms_dict[i] = checkautomorphisms(graph_list2, j)
-									global autolist
-									autolist = []
-			# if len(isolist[i]) > 1:
-			# 	for h in range(len(isolist[i])):
-			# 		for k in range(h+1, len(isolist[i])):
-			# 			isolist[h].append(k)
-			# 			isolist[k].append(h)
+							if i not in isomorphisms_dict.keys():
+								isomorphisms_dict[i] = checkautomorphisms(graph_list2, j)
+								global autolist
+								autolist = []
+							# if len(isolist[i]) > 1:
+							# for h in range(len(isolist[i])):
+							# 		for k in range(h+1, len(isolist[i])):
+							# 			isolist[h].append(k)
+							# 			isolist[k].append(h)
+
 		if not Aut:
 			for isomorphism in isomorphismes_list:
 				print(isomorphism)
